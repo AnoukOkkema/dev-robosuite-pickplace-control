@@ -1,0 +1,84 @@
+[project]
+name = "dev-robosuite-pickplace-control"
+version = "0.1.0"
+description = "Drives a robosuite Panda arm through a pick-and-place cycle using ONNX vision models."
+readme = "README.md"
+requires-python = ">=3.11, <3.12"
+dependencies = [
+    "numpy>=1.26.4",
+    "opencv-python>=4.11.0.86",
+    "pyyaml>=6.0.3",
+    "robosuite>=1.5.2",
+    "robosuite-models>=1.0.0",
+    "scipy>=1.14.0",
+    "mujoco==3.3.0",
+    "tqdm>=4.67.0",
+    "imageio>=2.37.0",
+    "imageio-ffmpeg>=0.6.0",
+    "fastapi>=0.141.1",
+    "uvicorn>=0.52.3",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "torch",
+    "torchvision",
+    "onnxruntime>=1.20.0",
+]
+mps = [
+    "torch",
+    "torchvision",
+    "onnxruntime>=1.20.0",
+]
+gpu = [
+    "torch",
+    "torchvision",
+    "onnxruntime-gpu>=1.26.0",
+]
+
+[tool.uv]
+conflicts = [
+    [
+        { extra = "cpu" },
+        { extra = "mps" },
+        { extra = "gpu" },
+    ],
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+# mps: geen expliciete index -> valt terug op PyPI, waar de macOS-wheel
+# native MPS-ondersteuning bevat (PyTorch's eigen indexes leveren geen macOS-wheels).
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu124", extra = "gpu" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu124", extra = "gpu" },
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.0.0",
+    "flake8>=7.0.0",
+    "isort>=6.0.0",
+    "pre-commit>=4.0.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 88

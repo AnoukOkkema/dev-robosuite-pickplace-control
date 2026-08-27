@@ -1,0 +1,91 @@
+DETECTOR:
+  MODEL_PATH: "models/yolo_detector.onnx"
+  CLASS_NAMES: ["Bread", "Can", "Cereal", "Milk"]
+  IMAGE_SIZE: 640
+  CONF_THRESHOLD: 0.50
+  IOU_THRESHOLD: 0.45
+
+POSE:
+  MODEL_PATH: "models/pose_estimator.onnx"
+  POS_IMAGE_SIZE: 320
+  ROTATION_IMAGE_SIZE: 128
+
+ENVIRONMENT:
+  # Fixed scene for repeatable controller tuning.
+  SEED: null
+  # World-frame robot base offset.
+  ROBOT_BASE_OFFSET: [0.10, 0.10, 0.0]
+
+EXECUTION:
+  TARGET_CLASSES: ["Cereal", "Milk", "Can", "Bread"]
+
+VISUALIZATION:
+  # Enable only when creating an MP4 for the README or a motion review.
+  VIDEO_ENABLED: false
+  VIDEO_PATH: "outputs/pickplace.mp4"
+  VIDEO_FPS: 30
+  # Render one Full-HD frame every six controller steps to limit render time.
+  VIDEO_CAPTURE_EVERY_TICKS: 6
+  # Export compact qpos states and a reusable MJCF scene for the web player.
+  TRAJECTORY_ENABLED: false
+  TRAJECTORY_PATH: "outputs/trajectory/trajectory.bin"
+  TRAJECTORY_MODEL_PATH: "outputs/trajectory/model.zip"
+  # Save an annotated PNG per detection scan, plus one raw opening capture.
+  SCAN_IMAGES_ENABLED: true
+  SCAN_IMAGES_DIR: "outputs/scans"
+
+MOTION:
+  # J5/J6 are solved for a vertical-down gripper.
+  JOINT5_NAME: "robot0_joint5"
+  JOINT5_KP: 4.0
+  JOINT5_DOWN_TOLERANCE_DEG: 1.0
+  JOINT6_NAME: "robot0_joint6"
+  LOCK_JOINT6: false
+  JOINT6_KP: 4.0
+  JOINT6_DOWN_TOLERANCE_DEG: 1.0
+  JOINT7_KP: 4.0
+  YAW_JOINT_INDEX: 6
+  YAW_MAX_STEP_DEG: 4.0
+  MAX_JOINT_DELTA: 0.05
+  # Separate limit for the vertical wrist correction.
+  MAX_WRIST_JOINT_DELTA: 0.10
+  POSITION_KP: 4.0
+  ORIENTATION_KP: 1.0
+  ORIENTATION_WEIGHT: 0.0
+  MAX_POSITION_DELTA: 0.03
+  MAX_ORIENTATION_DELTA: 0.10
+  IK_DAMPING: 0.03
+  # Robotiq85 finger actuator multiplier.
+  GRIPPER_CLAMP_FORCE_MULTIPLIER: 1.05
+
+STAGES:
+  APPROACH_HEIGHT: 1.2
+  DESCEND_CLEARANCE: 0.12
+  FINE_DESCEND_OFFSETS:
+    Cereal: 0.018
+    Milk: 0.022
+    Can: -0.003
+    Bread: -0.003
+  FINE_DESCEND_MAX_POSITION_DELTAS:
+    Bread: 0.005
+    Can: 0.015
+    Cereal: 0.015
+    Milk: 0.005
+  # Absolute EEF world-Z at release.
+  BIN_RELEASE_HEIGHTS:
+    Cereal: 0.95
+    Milk: 0.95
+    Can: 0.95
+    Bread: 0.85
+  POSITION_TOLERANCE: 0.005
+  BIN_RELEASE_TOLERANCE: 0.005
+  YAW_TOLERANCE_DEG: 0.8
+  GRASP_DWELL_TICKS: 40
+  # Object must rise this far while still grasped before transport to a bin.
+  GRASP_MIN_LIFT_HEIGHT: 0.03
+  GRASP_YAW_OFFSET_DEG: 0.0
+  RELEASE_DWELL_TICKS: 50
+  MAX_TICKS_PER_STAGE: 1500
+  LOG_EVERY_TICKS: 20
+  OPEN_GRIPPER: -0.05
+  CLOSED_GRIPPER: 1.0

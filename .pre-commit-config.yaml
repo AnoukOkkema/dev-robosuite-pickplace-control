@@ -1,0 +1,26 @@
+default_stages: [pre-commit]
+
+repos:
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        entry: uv run isort
+        language: system
+        types: [python]
+
+      - id: black
+        name: black
+        entry: uv run black
+        language: system
+        types: [python]
+
+      - id: flake8
+        name: flake8
+        entry: uv run flake8
+        language: system
+        types: [python]
+        args:
+          - --max-line-length=88
+          - --extend-ignore=E203,W503
+          - --exclude=.git,.venv,__pycache__,outputs,logs

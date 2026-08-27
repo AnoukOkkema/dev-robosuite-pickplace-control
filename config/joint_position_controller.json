@@ -1,0 +1,22 @@
+{
+  "type": "BASIC",
+  "body_parts": {
+    "arms": {
+      "right": {
+        "type": "JOINT_POSITION",
+        "input_type": "absolute",
+        "input_max": 6.28,
+        "input_min": -6.28,
+        "output_max": 6.28,
+        "output_min": -6.28,
+        "kp": 50,
+        "damping_ratio": 1.0,
+        "impedance_mode": "fixed",
+        "qpos_limits": null,
+        "interpolation": null,
+        "ramp_ratio": 0.2,
+        "gripper": {"type": "GRIP"}
+      }
+    }
+  }
+}
