@@ -1,267 +1,276 @@
-2026-08-27 23:14:34 | src.util.logging_configurator | INFO     | Pick-and-place pipeline started.
-2026-08-27 23:14:34 | src.vision.onnx_detector | INFO     | OnnxDetector initialized | model=models/yolo_detector.onnx | classes=['Bread', 'Can', 'Cereal', 'Milk'] | providers=['CUDAExecutionProvider', 'CPUExecutionProvider'] | active=['CPUExecutionProvider']
-2026-08-27 23:14:34 | src.vision.pose_estimator | INFO     | PoseEstimator initialized | model=models/pose_estimator.onnx | inputs=['image', 'bbox', 'class_onehot', 'crop'] | providers=['CUDAExecutionProvider', 'CPUExecutionProvider'] | active=['CPUExecutionProvider']
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | PickPlaceExecutor initialized | controller=PickPlaceController
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | Run started | seed=None | pick_order=Cereal, Milk, Can, Bread
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | Scan 1 | detected=4
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | Scan 1 | Milk detected | confidence=0.97 | world_position=(0.025, -0.212, 0.883) | grasp_yaw=-23.0° | position_error=0.4cm | rotation_error=0.8°
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | Scan 1 | Can detected | confidence=0.96 | world_position=(0.172, -0.334, 0.864) | grasp_yaw=-51.5° | position_error=0.6cm | rotation_error=39.9°
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | Scan 1 | Cereal detected | confidence=0.95 | world_position=(0.132, -0.240, 0.897) | grasp_yaw=-64.3° | position_error=0.5cm | rotation_error=0.8°
-2026-08-27 23:14:35 | src.execution.pickplace_executor | INFO     | Scan 1 | Bread detected | confidence=0.93 | world_position=(0.123, -0.383, 0.846) | grasp_yaw=26.5° | position_error=0.4cm | rotation_error=1.5°
-2026-08-27 23:14:36 | src.util.logging_configurator | INFO     | Scan 1 | saved outputs/scans/scan_01_agentview.png
-2026-08-27 23:14:36 | src.control.pickplace_controller | INFO     | Cereal | joint-pose start | object=(0.132, -0.240, 0.897) | bin=(0.003, 0.403, 0.800)
-2026-08-27 23:14:36 | src.control.pickplace_controller | INFO     | Cereal | RAISE started | target_position=(0.063, 0.000, 1.200)
-2026-08-27 23:14:36 | src.control.pickplace_controller | DEBUG    | Cereal | RAISE progress | tick=20 | position_error=0.1881 m
-2026-08-27 23:14:36 | src.control.pickplace_controller | DEBUG    | Cereal | RAISE progress | tick=40 | position_error=0.1179 m
-2026-08-27 23:14:36 | src.control.pickplace_controller | DEBUG    | Cereal | RAISE progress | tick=60 | position_error=0.0419 m
-2026-08-27 23:14:36 | src.control.pickplace_controller | INFO     | Cereal | RAISE completed | ticks=70 | position_error=0.0042 m | joint5_error=0.00° | joint6_error=0.66°
-2026-08-27 23:14:36 | src.control.pickplace_controller | INFO     | Cereal | ALIGN_XY started | target_position=(0.132, -0.240, 1.200)
-2026-08-27 23:14:36 | src.control.pickplace_controller | DEBUG    | Cereal | ALIGN_XY progress | tick=20 | position_error=0.1776 m
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | ALIGN_XY progress | tick=40 | position_error=0.0890 m
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | ALIGN_XY progress | tick=60 | position_error=0.0186 m
-2026-08-27 23:14:37 | src.control.pickplace_controller | INFO     | Cereal | ALIGN_XY completed | ticks=65 | position_error=0.0027 m | joint5_error=0.14° | joint6_error=0.17°
-2026-08-27 23:14:37 | src.control.pickplace_controller | INFO     | Cereal | DESCEND started | target_position=(0.132, -0.240, 1.017)
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND progress | tick=20 | position_error=0.1119 m
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND progress | tick=40 | position_error=0.0318 m
-2026-08-27 23:14:37 | src.control.pickplace_controller | INFO     | Cereal | DESCEND completed | ticks=46 | position_error=0.0047 m | joint5_error=0.26° | joint6_error=0.64°
-2026-08-27 23:14:37 | src.control.pickplace_controller | INFO     | Cereal | ORIENT_YAW started | target_yaw=115.68°
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=20
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=40
-2026-08-27 23:14:37 | src.control.pickplace_controller | INFO     | Cereal | ORIENT_YAW completed | ticks=45 | yaw_error=0.75°
-2026-08-27 23:14:37 | src.control.pickplace_controller | INFO     | Cereal | FINE_DESCEND started | target_position=(0.132, -0.240, 0.915)
-2026-08-27 23:14:37 | src.control.pickplace_controller | DEBUG    | Cereal | FINE_DESCEND progress | tick=20 | position_error=0.0653 m
-2026-08-27 23:14:38 | src.control.pickplace_controller | DEBUG    | Cereal | FINE_DESCEND progress | tick=40 | position_error=0.0238 m
-2026-08-27 23:14:38 | src.control.pickplace_controller | INFO     | Cereal | FINE_DESCEND completed | ticks=49 | position_error=0.0030 m | joint5_error=0.21° | joint6_error=0.28°
-2026-08-27 23:14:38 | src.control.pickplace_controller | INFO     | Cereal | GRASP started | closing gripper | dwell_ticks=40
-2026-08-27 23:14:38 | src.control.pickplace_controller | INFO     | Cereal | GRASP completed | object is held | dwell_ticks=40
-2026-08-27 23:14:38 | src.control.pickplace_controller | INFO     | Cereal | LIFT started | target_position=(0.132, -0.240, 1.200)
-2026-08-27 23:14:38 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=20 | position_error=0.2247 m
-2026-08-27 23:14:38 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=40 | position_error=0.1490 m
-2026-08-27 23:14:38 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=60 | position_error=0.0730 m
-2026-08-27 23:14:39 | src.control.pickplace_controller | INFO     | Cereal | LIFT verified | object rose 0.273 m while grasped
-2026-08-27 23:14:39 | src.control.pickplace_controller | INFO     | Cereal | LIFT completed | ticks=78 | position_error=0.0043 m | joint5_error=0.07° | joint6_error=0.64°
-2026-08-27 23:14:39 | src.control.pickplace_controller | INFO     | Cereal | REZERO_YAW started | target_yaw=-90.00°
-2026-08-27 23:14:39 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=20
-2026-08-27 23:14:39 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=40
-2026-08-27 23:14:39 | src.control.pickplace_controller | INFO     | Cereal | REZERO_YAW completed | ticks=48 | yaw_error=-0.71°
-2026-08-27 23:14:39 | src.control.pickplace_controller | INFO     | Cereal | MOVE_TO_BIN started | target_position=(0.003, 0.403, 1.200)
-2026-08-27 23:14:39 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=20 | position_error=0.5816 m
-2026-08-27 23:14:39 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=40 | position_error=0.4991 m
-2026-08-27 23:14:39 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=60 | position_error=0.4181 m
-2026-08-27 23:14:40 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=80 | position_error=0.3372 m
-2026-08-27 23:14:40 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=100 | position_error=0.2567 m
-2026-08-27 23:14:40 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=120 | position_error=0.1767 m
-2026-08-27 23:14:40 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=140 | position_error=0.0967 m
-2026-08-27 23:14:40 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=160 | position_error=0.0296 m
-2026-08-27 23:14:40 | src.control.pickplace_controller | INFO     | Cereal | MOVE_TO_BIN completed | ticks=168 | position_error=0.0028 m | joint5_error=0.22° | joint6_error=0.15° | yaw_error=-0.69°
-2026-08-27 23:14:40 | src.control.pickplace_controller | INFO     | Cereal | DESCEND_TO_BIN started | target_position=(0.003, 0.403, 0.950)
-2026-08-27 23:14:40 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND_TO_BIN progress | tick=20 | position_error=0.1776 m
-2026-08-27 23:14:41 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND_TO_BIN progress | tick=40 | position_error=0.0940 m
-2026-08-27 23:14:41 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND_TO_BIN progress | tick=60 | position_error=0.0158 m
-2026-08-27 23:14:41 | src.control.pickplace_controller | INFO     | Cereal | DESCEND_TO_BIN completed | ticks=71 | position_error=0.0009 m | joint5_error=0.03° | joint6_error=0.01° | yaw_error=-0.72°
-2026-08-27 23:14:41 | src.control.pickplace_controller | INFO     | Cereal | RELEASE started | opening gripper | dwell_ticks=50
-2026-08-27 23:14:41 | src.control.pickplace_controller | INFO     | Cereal | RELEASE completed | dwell_ticks=50 | placement finished
-2026-08-27 23:14:41 | src.execution.pickplace_executor | INFO     | Scan 2 | detected=3
-2026-08-27 23:14:41 | src.execution.pickplace_executor | INFO     | Scan 2 | Milk detected | confidence=0.97 | world_position=(0.033, -0.209, 0.883) | grasp_yaw=-23.0° | position_error=0.7cm | rotation_error=0.8°
-2026-08-27 23:14:41 | src.execution.pickplace_executor | INFO     | Scan 2 | Can detected | confidence=0.96 | world_position=(0.174, -0.334, 0.864) | grasp_yaw=-51.5° | position_error=0.7cm | rotation_error=39.8°
-2026-08-27 23:14:41 | src.execution.pickplace_executor | INFO     | Scan 2 | Bread detected | confidence=0.93 | world_position=(0.128, -0.381, 0.846) | grasp_yaw=26.5° | position_error=0.5cm | rotation_error=2.0°
-2026-08-27 23:14:41 | src.util.logging_configurator | INFO     | Scan 2 | saved outputs/scans/scan_02_agentview.png
-2026-08-27 23:14:41 | src.control.pickplace_controller | INFO     | Milk | joint-pose start | object=(0.033, -0.209, 0.883) | bin=(0.003, 0.158, 0.800)
-2026-08-27 23:14:41 | src.control.pickplace_controller | INFO     | Milk | RAISE started | target_position=(0.002, 0.402, 1.200)
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | RAISE progress | tick=20 | position_error=0.1940 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | RAISE progress | tick=40 | position_error=0.1168 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | RAISE progress | tick=60 | position_error=0.0380 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | INFO     | Milk | RAISE completed | ticks=68 | position_error=0.0047 m | joint5_error=0.13° | joint6_error=0.71°
-2026-08-27 23:14:42 | src.control.pickplace_controller | INFO     | Milk | ALIGN_XY started | target_position=(0.033, -0.209, 1.200)
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=20 | position_error=0.5460 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=40 | position_error=0.4727 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=60 | position_error=0.3996 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=80 | position_error=0.3262 m
-2026-08-27 23:14:42 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=100 | position_error=0.2515 m
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=120 | position_error=0.1751 m
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=140 | position_error=0.0959 m
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=160 | position_error=0.0209 m
-2026-08-27 23:14:43 | src.control.pickplace_controller | INFO     | Milk | ALIGN_XY completed | ticks=163 | position_error=0.0043 m | joint5_error=0.02° | joint6_error=0.03°
-2026-08-27 23:14:43 | src.control.pickplace_controller | INFO     | Milk | DESCEND started | target_position=(0.033, -0.209, 1.003)
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND progress | tick=20 | position_error=0.1314 m
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND progress | tick=40 | position_error=0.0538 m
-2026-08-27 23:14:43 | src.control.pickplace_controller | INFO     | Milk | DESCEND completed | ticks=54 | position_error=0.0039 m | joint5_error=0.26° | joint6_error=0.60°
-2026-08-27 23:14:43 | src.control.pickplace_controller | INFO     | Milk | ORIENT_YAW started | target_yaw=156.96°
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=20
-2026-08-27 23:14:43 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=40
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=60
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=80
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=100
-2026-08-27 23:14:44 | src.control.pickplace_controller | INFO     | Milk | ORIENT_YAW completed | ticks=110 | yaw_error=0.66°
-2026-08-27 23:14:44 | src.control.pickplace_controller | INFO     | Milk | FINE_DESCEND started | target_position=(0.033, -0.209, 0.905)
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=20 | position_error=0.0866 m
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=40 | position_error=0.0736 m
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=60 | position_error=0.0604 m
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=80 | position_error=0.0473 m
-2026-08-27 23:14:44 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=100 | position_error=0.0340 m
-2026-08-27 23:14:45 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=120 | position_error=0.0208 m
-2026-08-27 23:14:45 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=140 | position_error=0.0075 m
-2026-08-27 23:14:45 | src.control.pickplace_controller | INFO     | Milk | FINE_DESCEND completed | ticks=143 | position_error=0.0048 m | joint5_error=0.15° | joint6_error=0.13°
-2026-08-27 23:14:45 | src.control.pickplace_controller | INFO     | Milk | GRASP started | closing gripper | dwell_ticks=40
-2026-08-27 23:14:45 | src.control.pickplace_controller | INFO     | Milk | GRASP completed | object is held | dwell_ticks=40
-2026-08-27 23:14:45 | src.control.pickplace_controller | INFO     | Milk | LIFT started | target_position=(0.033, -0.209, 1.200)
-2026-08-27 23:14:45 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=20 | position_error=0.2400 m
-2026-08-27 23:14:45 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=40 | position_error=0.1808 m
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=60 | position_error=0.1103 m
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=80 | position_error=0.0348 m
-2026-08-27 23:14:46 | src.control.pickplace_controller | INFO     | Milk | LIFT verified | object rose 0.280 m while grasped
-2026-08-27 23:14:46 | src.control.pickplace_controller | INFO     | Milk | LIFT completed | ticks=88 | position_error=0.0043 m | joint5_error=0.03° | joint6_error=0.69°
-2026-08-27 23:14:46 | src.control.pickplace_controller | INFO     | Milk | REZERO_YAW started | target_yaw=-90.00°
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=20
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=40
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=60
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=80
-2026-08-27 23:14:46 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=100
-2026-08-27 23:14:47 | src.control.pickplace_controller | INFO     | Milk | REZERO_YAW completed | ticks=116 | yaw_error=-0.65°
-2026-08-27 23:14:47 | src.control.pickplace_controller | INFO     | Milk | MOVE_TO_BIN started | target_position=(0.003, 0.158, 1.200)
-2026-08-27 23:14:47 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=20 | position_error=0.2928 m
-2026-08-27 23:14:47 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=40 | position_error=0.2167 m
-2026-08-27 23:14:47 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=60 | position_error=0.1429 m
-2026-08-27 23:14:47 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=80 | position_error=0.0678 m
-2026-08-27 23:14:47 | src.control.pickplace_controller | INFO     | Milk | MOVE_TO_BIN completed | ticks=96 | position_error=0.0016 m | joint5_error=0.07° | joint6_error=0.05° | yaw_error=0.13°
-2026-08-27 23:14:47 | src.control.pickplace_controller | INFO     | Milk | DESCEND_TO_BIN started | target_position=(0.003, 0.158, 0.950)
-2026-08-27 23:14:48 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=20 | position_error=0.1846 m
-2026-08-27 23:14:48 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=40 | position_error=0.1090 m
-2026-08-27 23:14:48 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=60 | position_error=0.0468 m
-2026-08-27 23:14:48 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=80 | position_error=0.0020 m
-2026-08-27 23:14:48 | src.control.pickplace_controller | INFO     | Milk | DESCEND_TO_BIN completed | ticks=83 | position_error=0.0008 m | joint5_error=0.04° | joint6_error=0.03° | yaw_error=-0.68°
-2026-08-27 23:14:48 | src.control.pickplace_controller | INFO     | Milk | RELEASE started | opening gripper | dwell_ticks=50
-2026-08-27 23:14:48 | src.control.pickplace_controller | INFO     | Milk | RELEASE completed | dwell_ticks=50 | placement finished
-2026-08-27 23:14:48 | src.execution.pickplace_executor | INFO     | Scan 3 | detected=2
-2026-08-27 23:14:48 | src.execution.pickplace_executor | INFO     | Scan 3 | Can detected | confidence=0.96 | world_position=(0.176, -0.332, 0.864) | grasp_yaw=-51.5° | position_error=0.9cm | rotation_error=40.0°
-2026-08-27 23:14:48 | src.execution.pickplace_executor | INFO     | Scan 3 | Bread detected | confidence=0.93 | world_position=(0.127, -0.380, 0.846) | grasp_yaw=25.9° | position_error=0.5cm | rotation_error=2.1°
-2026-08-27 23:14:48 | src.util.logging_configurator | INFO     | Scan 3 | saved outputs/scans/scan_03_agentview.png
-2026-08-27 23:14:48 | src.control.pickplace_controller | INFO     | Can | joint-pose start | object=(0.176, -0.332, 0.864) | bin=(0.198, 0.403, 0.800)
-2026-08-27 23:14:48 | src.control.pickplace_controller | INFO     | Can | RAISE started | target_position=(0.002, 0.157, 1.200)
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=20 | position_error=0.2086 m
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=40 | position_error=0.1524 m
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=60 | position_error=0.0828 m
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=80 | position_error=0.0083 m
-2026-08-27 23:14:49 | src.control.pickplace_controller | INFO     | Can | RAISE completed | ticks=81 | position_error=0.0043 m | joint5_error=0.00° | joint6_error=0.66°
-2026-08-27 23:14:49 | src.control.pickplace_controller | INFO     | Can | ALIGN_XY started | target_position=(0.176, -0.332, 1.200)
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=20 | position_error=0.4545 m
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=40 | position_error=0.3734 m
-2026-08-27 23:14:49 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=60 | position_error=0.2862 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=80 | position_error=0.1971 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=100 | position_error=0.1271 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=120 | position_error=0.0712 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=140 | position_error=0.0253 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | INFO     | Can | ALIGN_XY completed | ticks=150 | position_error=0.0040 m | joint5_error=0.15° | joint6_error=0.24°
-2026-08-27 23:14:50 | src.control.pickplace_controller | INFO     | Can | DESCEND started | target_position=(0.176, -0.332, 0.984)
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | DESCEND progress | tick=20 | position_error=0.1454 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | DESCEND progress | tick=40 | position_error=0.0640 m
-2026-08-27 23:14:50 | src.control.pickplace_controller | INFO     | Can | DESCEND completed | ticks=54 | position_error=0.0035 m | joint5_error=0.24° | joint6_error=0.52°
-2026-08-27 23:14:50 | src.control.pickplace_controller | INFO     | Can | FINE_DESCEND started | target_position=(0.176, -0.332, 0.861)
-2026-08-27 23:14:50 | src.control.pickplace_controller | DEBUG    | Can | FINE_DESCEND progress | tick=20 | position_error=0.0841 m
-2026-08-27 23:14:51 | src.control.pickplace_controller | DEBUG    | Can | FINE_DESCEND progress | tick=40 | position_error=0.0412 m
-2026-08-27 23:14:51 | src.control.pickplace_controller | INFO     | Can | FINE_DESCEND completed | ticks=56 | position_error=0.0043 m | joint5_error=0.15° | joint6_error=0.21°
-2026-08-27 23:14:51 | src.control.pickplace_controller | INFO     | Can | GRASP started | closing gripper | dwell_ticks=40
-2026-08-27 23:14:51 | src.control.pickplace_controller | INFO     | Can | GRASP completed | object is held | dwell_ticks=40
-2026-08-27 23:14:51 | src.control.pickplace_controller | INFO     | Can | LIFT started | target_position=(0.176, -0.332, 1.200)
-2026-08-27 23:14:51 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=20 | position_error=0.2729 m
-2026-08-27 23:14:51 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=40 | position_error=0.1917 m
-2026-08-27 23:14:51 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=60 | position_error=0.1108 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=80 | position_error=0.0315 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | INFO     | Can | LIFT verified | object rose 0.326 m while grasped
-2026-08-27 23:14:52 | src.control.pickplace_controller | INFO     | Can | LIFT completed | ticks=87 | position_error=0.0037 m | joint5_error=0.06° | joint6_error=0.63°
-2026-08-27 23:14:52 | src.control.pickplace_controller | INFO     | Can | REZERO_YAW started | target_yaw=-86.36°
-2026-08-27 23:14:52 | src.control.pickplace_controller | INFO     | Can | REZERO_YAW completed | ticks=0 | yaw_error=0.00°
-2026-08-27 23:14:52 | src.control.pickplace_controller | INFO     | Can | MOVE_TO_BIN started | target_position=(0.198, 0.403, 1.200)
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=20 | position_error=0.6586 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=40 | position_error=0.5730 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=60 | position_error=0.4871 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=80 | position_error=0.4022 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=100 | position_error=0.3149 m
-2026-08-27 23:14:52 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=120 | position_error=0.2266 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=140 | position_error=0.1418 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=160 | position_error=0.0720 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=180 | position_error=0.0198 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | INFO     | Can | MOVE_TO_BIN completed | ticks=186 | position_error=0.0046 m | joint5_error=0.18° | joint6_error=0.26° | yaw_error=-0.48°
-2026-08-27 23:14:53 | src.control.pickplace_controller | INFO     | Can | DESCEND_TO_BIN started | target_position=(0.198, 0.403, 0.950)
-2026-08-27 23:14:53 | src.control.pickplace_controller | DEBUG    | Can | DESCEND_TO_BIN progress | tick=20 | position_error=0.1780 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | DEBUG    | Can | DESCEND_TO_BIN progress | tick=40 | position_error=0.0952 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | DEBUG    | Can | DESCEND_TO_BIN progress | tick=60 | position_error=0.0102 m
-2026-08-27 23:14:53 | src.control.pickplace_controller | INFO     | Can | DESCEND_TO_BIN completed | ticks=61 | position_error=0.0027 m | joint5_error=0.23° | joint6_error=0.44° | yaw_error=-0.78°
-2026-08-27 23:14:53 | src.control.pickplace_controller | INFO     | Can | RELEASE started | opening gripper | dwell_ticks=50
-2026-08-27 23:14:54 | src.control.pickplace_controller | INFO     | Can | RELEASE completed | dwell_ticks=50 | placement finished
-2026-08-27 23:14:54 | src.execution.pickplace_executor | INFO     | Scan 4 | detected=1
-2026-08-27 23:14:54 | src.execution.pickplace_executor | INFO     | Scan 4 | Bread detected | confidence=0.96 | world_position=(0.129, -0.379, 0.845) | grasp_yaw=23.2° | position_error=0.6cm | rotation_error=0.0°
-2026-08-27 23:14:54 | src.util.logging_configurator | INFO     | Scan 4 | saved outputs/scans/scan_04_agentview.png
-2026-08-27 23:14:54 | src.control.pickplace_controller | INFO     | Bread | joint-pose start | object=(0.129, -0.379, 0.845) | bin=(0.198, 0.158, 0.800)
-2026-08-27 23:14:54 | src.control.pickplace_controller | INFO     | Bread | RAISE started | target_position=(0.199, 0.403, 1.200)
-2026-08-27 23:14:54 | src.control.pickplace_controller | DEBUG    | Bread | RAISE progress | tick=20 | position_error=0.1845 m
-2026-08-27 23:14:54 | src.control.pickplace_controller | DEBUG    | Bread | RAISE progress | tick=40 | position_error=0.1019 m
-2026-08-27 23:14:54 | src.control.pickplace_controller | DEBUG    | Bread | RAISE progress | tick=60 | position_error=0.0216 m
-2026-08-27 23:14:54 | src.control.pickplace_controller | INFO     | Bread | RAISE completed | ticks=64 | position_error=0.0044 m | joint5_error=0.05° | joint6_error=0.67°
-2026-08-27 23:14:54 | src.control.pickplace_controller | INFO     | Bread | ALIGN_XY started | target_position=(0.129, -0.379, 1.200)
-2026-08-27 23:14:54 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=20 | position_error=0.7369 m
-2026-08-27 23:14:54 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=40 | position_error=0.6767 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=60 | position_error=0.5994 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=80 | position_error=0.5145 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=100 | position_error=0.4291 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=120 | position_error=0.3435 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=140 | position_error=0.2577 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=160 | position_error=0.1718 m
-2026-08-27 23:14:55 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=180 | position_error=0.0882 m
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=200 | position_error=0.0190 m
-2026-08-27 23:14:56 | src.control.pickplace_controller | INFO     | Bread | ALIGN_XY completed | ticks=204 | position_error=0.0041 m | joint5_error=0.20° | joint6_error=0.22°
-2026-08-27 23:14:56 | src.control.pickplace_controller | INFO     | Bread | DESCEND started | target_position=(0.129, -0.379, 0.965)
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND progress | tick=20 | position_error=0.1638 m
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND progress | tick=40 | position_error=0.0825 m
-2026-08-27 23:14:56 | src.control.pickplace_controller | INFO     | Bread | DESCEND completed | ticks=58 | position_error=0.0043 m | joint5_error=0.34° | joint6_error=0.52°
-2026-08-27 23:14:56 | src.control.pickplace_controller | INFO     | Bread | ORIENT_YAW started | target_yaw=-156.81°
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | ORIENT_YAW progress | tick=20
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | ORIENT_YAW progress | tick=40
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | ORIENT_YAW progress | tick=60
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | ORIENT_YAW progress | tick=80
-2026-08-27 23:14:56 | src.control.pickplace_controller | DEBUG    | Bread | ORIENT_YAW progress | tick=100
-2026-08-27 23:14:57 | src.control.pickplace_controller | INFO     | Bread | ORIENT_YAW completed | ticks=115 | yaw_error=-0.65°
-2026-08-27 23:14:57 | src.control.pickplace_controller | INFO     | Bread | FINE_DESCEND started | target_position=(0.129, -0.379, 0.842)
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=20 | position_error=0.1111 m
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=40 | position_error=0.0972 m
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=60 | position_error=0.0833 m
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=80 | position_error=0.0693 m
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=100 | position_error=0.0553 m
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=120 | position_error=0.0412 m
-2026-08-27 23:14:57 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=140 | position_error=0.0271 m
-2026-08-27 23:14:58 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=160 | position_error=0.0129 m
-2026-08-27 23:14:58 | src.control.pickplace_controller | INFO     | Bread | FINE_DESCEND completed | ticks=171 | position_error=0.0044 m | joint5_error=0.08° | joint6_error=0.08°
-2026-08-27 23:14:58 | src.control.pickplace_controller | INFO     | Bread | GRASP started | closing gripper | dwell_ticks=40
-2026-08-27 23:14:58 | src.control.pickplace_controller | INFO     | Bread | GRASP completed | object is held | dwell_ticks=40
-2026-08-27 23:14:58 | src.control.pickplace_controller | INFO     | Bread | LIFT started | target_position=(0.129, -0.379, 1.200)
-2026-08-27 23:14:58 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=20 | position_error=0.2921 m
-2026-08-27 23:14:58 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=40 | position_error=0.2149 m
-2026-08-27 23:14:58 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=60 | position_error=0.1326 m
-2026-08-27 23:14:58 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=80 | position_error=0.0523 m
-2026-08-27 23:14:59 | src.control.pickplace_controller | INFO     | Bread | LIFT verified | object rose 0.349 m while grasped
-2026-08-27 23:14:59 | src.control.pickplace_controller | INFO     | Bread | LIFT completed | ticks=92 | position_error=0.0039 m | joint5_error=0.08° | joint6_error=0.65°
-2026-08-27 23:14:59 | src.control.pickplace_controller | INFO     | Bread | REZERO_YAW started | target_yaw=90.00°
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | REZERO_YAW progress | tick=20
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | REZERO_YAW progress | tick=40
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | REZERO_YAW progress | tick=60
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | REZERO_YAW progress | tick=80
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | REZERO_YAW progress | tick=100
-2026-08-27 23:14:59 | src.control.pickplace_controller | INFO     | Bread | REZERO_YAW completed | ticks=100 | yaw_error=0.73°
-2026-08-27 23:14:59 | src.control.pickplace_controller | INFO     | Bread | MOVE_TO_BIN started | target_position=(0.198, 0.158, 1.200)
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=20 | position_error=0.4644 m
-2026-08-27 23:14:59 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=40 | position_error=0.3815 m
-2026-08-27 23:15:00 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=60 | position_error=0.2978 m
-2026-08-27 23:15:00 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=80 | position_error=0.2128 m
-2026-08-27 23:15:00 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=100 | position_error=0.1265 m
-2026-08-27 23:15:00 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=120 | position_error=0.0385 m
-2026-08-27 23:15:00 | src.control.pickplace_controller | INFO     | Bread | MOVE_TO_BIN completed | ticks=129 | position_error=0.0018 m | joint5_error=0.11° | joint6_error=0.13° | yaw_error=-0.33°
-2026-08-27 23:15:00 | src.control.pickplace_controller | INFO     | Bread | DESCEND_TO_BIN started | target_position=(0.198, 0.158, 0.850)
-2026-08-27 23:15:00 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=20 | position_error=0.2779 m
-2026-08-27 23:15:00 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=40 | position_error=0.1970 m
-2026-08-27 23:15:01 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=60 | position_error=0.1148 m
-2026-08-27 23:15:01 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=80 | position_error=0.0394 m
-2026-08-27 23:15:01 | src.control.pickplace_controller | INFO     | Bread | DESCEND_TO_BIN completed | ticks=98 | position_error=0.0005 m | joint5_error=0.09° | joint6_error=0.03° | yaw_error=-0.77°
-2026-08-27 23:15:01 | src.control.pickplace_controller | INFO     | Bread | RELEASE started | opening gripper | dwell_ticks=50
-2026-08-27 23:15:01 | src.control.pickplace_controller | INFO     | Bread | RELEASE completed | dwell_ticks=50 | placement finished
-2026-08-27 23:15:01 | src.execution.pickplace_executor | INFO     | SUMMARY | objects_placed=4/4 | placed=Cereal, Milk, Can, Bread | simulation_duration=181.4 s
-2026-08-27 23:15:01 | src.util.logging_configurator | INFO     | Pipeline completed | objects_placed=4
+2026-08-28 15:19:40 | src.util.logging_configurator | INFO     | Pick-and-place pipeline started.
+2026-08-28 15:19:40 | src.vision.onnx_detector | INFO     | OnnxDetector initialized | model=models/yolo_detector.onnx | classes=['Bread', 'Can', 'Cereal', 'Milk'] | providers=['CUDAExecutionProvider', 'CPUExecutionProvider'] | active=['CPUExecutionProvider']
+2026-08-28 15:19:40 | src.vision.pose_estimator | INFO     | PoseEstimator initialized | model=models/pose_estimator.onnx | inputs=['image', 'bbox', 'class_onehot', 'crop'] | providers=['CUDAExecutionProvider', 'CPUExecutionProvider'] | active=['CPUExecutionProvider']
+2026-08-28 15:19:43 | src.execution.pickplace_executor | INFO     | PickPlaceExecutor initialized | controller=PickPlaceController
+2026-08-28 15:19:43 | src.execution.pickplace_executor | INFO     | Run started | seed=None | pick_order=Cereal, Milk, Can, Bread
+2026-08-28 15:19:44 | src.execution.pickplace_executor | INFO     | Scan 1 | detected=4
+2026-08-28 15:19:44 | src.execution.pickplace_executor | INFO     | Scan 1 | Milk detected | confidence=0.98 | world_position=(0.194, -0.397, 0.883) | grasp_yaw=-3.7° | position_error=0.5cm | rotation_error=1.9°
+2026-08-28 15:19:44 | src.execution.pickplace_executor | INFO     | Scan 1 | Cereal detected | confidence=0.97 | world_position=(-0.001, -0.246, 0.896) | grasp_yaw=-20.6° | position_error=0.6cm | rotation_error=0.4°
+2026-08-28 15:19:44 | src.execution.pickplace_executor | INFO     | Scan 1 | Can detected | confidence=0.96 | world_position=(0.038, -0.125, 0.862) | grasp_yaw=-43.9° | position_error=0.4cm | rotation_error=n/a (rotation-symmetric)
+2026-08-28 15:19:44 | src.execution.pickplace_executor | INFO     | Scan 1 | Bread detected | confidence=0.95 | world_position=(0.082, -0.338, 0.844) | grasp_yaw=-81.6° | position_error=0.1cm | rotation_error=0.4°
+2026-08-28 15:19:44 | src.util.logging_configurator | INFO     | Scan 1 | saved outputs/scans/scan_01_agentview.png
+2026-08-28 15:19:44 | src.control.pickplace_controller | INFO     | Cereal | joint-pose start | object=(-0.001, -0.246, 0.896) | bin=(0.003, 0.403, 0.800)
+2026-08-28 15:19:44 | src.control.pickplace_controller | INFO     | Cereal | RAISE started | target_position=(0.063, -0.000, 1.200)
+2026-08-28 15:19:45 | src.control.pickplace_controller | DEBUG    | Cereal | RAISE progress | tick=20 | position_error=0.1881 m
+2026-08-28 15:19:45 | src.control.pickplace_controller | DEBUG    | Cereal | RAISE progress | tick=40 | position_error=0.1179 m
+2026-08-28 15:19:46 | src.control.pickplace_controller | DEBUG    | Cereal | RAISE progress | tick=60 | position_error=0.0419 m
+2026-08-28 15:19:46 | src.control.pickplace_controller | INFO     | Cereal | RAISE completed | ticks=70 | position_error=0.0042 m | joint5_error=0.00° | joint6_error=0.66°
+2026-08-28 15:19:46 | src.control.pickplace_controller | INFO     | Cereal | ALIGN_XY started | target_position=(-0.001, -0.246, 1.200)
+2026-08-28 15:19:46 | src.control.pickplace_controller | DEBUG    | Cereal | ALIGN_XY progress | tick=20 | position_error=0.1842 m
+2026-08-28 15:19:47 | src.control.pickplace_controller | DEBUG    | Cereal | ALIGN_XY progress | tick=40 | position_error=0.1052 m
+2026-08-28 15:19:47 | src.control.pickplace_controller | DEBUG    | Cereal | ALIGN_XY progress | tick=60 | position_error=0.0276 m
+2026-08-28 15:19:47 | src.control.pickplace_controller | INFO     | Cereal | ALIGN_XY completed | ticks=65 | position_error=0.0038 m | joint5_error=0.16° | joint6_error=0.01°
+2026-08-28 15:19:47 | src.control.pickplace_controller | INFO     | Cereal | DESCEND started | target_position=(-0.001, -0.246, 1.016)
+2026-08-28 15:19:48 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND progress | tick=20 | position_error=0.1179 m
+2026-08-28 15:19:48 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND progress | tick=40 | position_error=0.0411 m
+2026-08-28 15:19:48 | src.control.pickplace_controller | INFO     | Cereal | DESCEND completed | ticks=50 | position_error=0.0049 m | joint5_error=0.34° | joint6_error=0.66°
+2026-08-28 15:19:48 | src.control.pickplace_controller | INFO     | Cereal | ORIENT_YAW started | target_yaw=159.41°
+2026-08-28 15:19:49 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=20
+2026-08-28 15:19:49 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=40
+2026-08-28 15:19:49 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=60
+2026-08-28 15:19:50 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=80
+2026-08-28 15:19:50 | src.control.pickplace_controller | DEBUG    | Cereal | ORIENT_YAW progress | tick=100
+2026-08-28 15:19:50 | src.control.pickplace_controller | INFO     | Cereal | ORIENT_YAW completed | ticks=116 | yaw_error=0.67°
+2026-08-28 15:19:50 | src.control.pickplace_controller | INFO     | Cereal | FINE_DESCEND started | target_position=(-0.001, -0.246, 0.914)
+2026-08-28 15:19:51 | src.control.pickplace_controller | DEBUG    | Cereal | FINE_DESCEND progress | tick=20 | position_error=0.0671 m
+2026-08-28 15:19:51 | src.control.pickplace_controller | DEBUG    | Cereal | FINE_DESCEND progress | tick=40 | position_error=0.0271 m
+2026-08-28 15:19:51 | src.control.pickplace_controller | INFO     | Cereal | FINE_DESCEND completed | ticks=51 | position_error=0.0031 m | joint5_error=0.53° | joint6_error=0.33°
+2026-08-28 15:19:51 | src.control.pickplace_controller | INFO     | Cereal | GRASP started | closing gripper | dwell_ticks=40
+2026-08-28 15:19:52 | src.control.pickplace_controller | INFO     | Cereal | GRASP completed | object is held | dwell_ticks=40
+2026-08-28 15:19:52 | src.control.pickplace_controller | INFO     | Cereal | LIFT started | target_position=(-0.001, -0.246, 1.200)
+2026-08-28 15:19:52 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=20 | position_error=0.2388 m
+2026-08-28 15:19:53 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=40 | position_error=0.1831 m
+2026-08-28 15:19:53 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=60 | position_error=0.1170 m
+2026-08-28 15:19:54 | src.control.pickplace_controller | DEBUG    | Cereal | LIFT progress | tick=80 | position_error=0.0439 m
+2026-08-28 15:19:54 | src.control.pickplace_controller | INFO     | Cereal | LIFT verified | object rose 0.274 m while grasped
+2026-08-28 15:19:54 | src.control.pickplace_controller | INFO     | Cereal | LIFT completed | ticks=91 | position_error=0.0043 m | joint5_error=0.01° | joint6_error=0.62°
+2026-08-28 15:19:54 | src.control.pickplace_controller | INFO     | Cereal | REZERO_YAW started | target_yaw=-90.00°
+2026-08-28 15:19:54 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=20
+2026-08-28 15:19:55 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=40
+2026-08-28 15:19:55 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=60
+2026-08-28 15:19:55 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=80
+2026-08-28 15:19:56 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=100
+2026-08-28 15:19:56 | src.control.pickplace_controller | DEBUG    | Cereal | REZERO_YAW progress | tick=120
+2026-08-28 15:19:56 | src.control.pickplace_controller | INFO     | Cereal | REZERO_YAW completed | ticks=121 | yaw_error=-0.66°
+2026-08-28 15:19:56 | src.control.pickplace_controller | INFO     | Cereal | MOVE_TO_BIN started | target_position=(0.003, 0.403, 1.200)
+2026-08-28 15:19:56 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=20 | position_error=0.5896 m
+2026-08-28 15:19:57 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=40 | position_error=0.5174 m
+2026-08-28 15:19:57 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=60 | position_error=0.4459 m
+2026-08-28 15:19:58 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=80 | position_error=0.3740 m
+2026-08-28 15:19:58 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=100 | position_error=0.2998 m
+2026-08-28 15:19:59 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=120 | position_error=0.2210 m
+2026-08-28 15:19:59 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=140 | position_error=0.1381 m
+2026-08-28 15:20:00 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=160 | position_error=0.0673 m
+2026-08-28 15:20:00 | src.control.pickplace_controller | DEBUG    | Cereal | MOVE_TO_BIN progress | tick=180 | position_error=0.0106 m
+2026-08-28 15:20:00 | src.control.pickplace_controller | INFO     | Cereal | MOVE_TO_BIN completed | ticks=181 | position_error=0.0047 m | joint5_error=0.22° | joint6_error=0.14° | yaw_error=-0.67°
+2026-08-28 15:20:00 | src.control.pickplace_controller | INFO     | Cereal | DESCEND_TO_BIN started | target_position=(0.003, 0.403, 0.950)
+2026-08-28 15:20:01 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND_TO_BIN progress | tick=20 | position_error=0.1792 m
+2026-08-28 15:20:01 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND_TO_BIN progress | tick=40 | position_error=0.0957 m
+2026-08-28 15:20:02 | src.control.pickplace_controller | DEBUG    | Cereal | DESCEND_TO_BIN progress | tick=60 | position_error=0.0167 m
+2026-08-28 15:20:02 | src.control.pickplace_controller | INFO     | Cereal | DESCEND_TO_BIN completed | ticks=71 | position_error=0.0009 m | joint5_error=0.00° | joint6_error=0.01° | yaw_error=-0.72°
+2026-08-28 15:20:02 | src.control.pickplace_controller | INFO     | Cereal | RELEASE started | opening gripper | dwell_ticks=50
+2026-08-28 15:20:03 | src.control.pickplace_controller | INFO     | Cereal | RELEASE completed | dwell_ticks=50 | placement finished
+2026-08-28 15:20:03 | src.execution.pickplace_executor | INFO     | Scan 2 | detected=3
+2026-08-28 15:20:03 | src.execution.pickplace_executor | INFO     | Scan 2 | Milk detected | confidence=0.98 | world_position=(0.198, -0.397, 0.883) | grasp_yaw=-3.6° | position_error=0.2cm | rotation_error=1.7°
+2026-08-28 15:20:03 | src.execution.pickplace_executor | INFO     | Scan 2 | Can detected | confidence=0.96 | world_position=(0.041, -0.124, 0.862) | grasp_yaw=-40.9° | position_error=0.7cm | rotation_error=n/a (rotation-symmetric)
+2026-08-28 15:20:03 | src.execution.pickplace_executor | INFO     | Scan 2 | Bread detected | confidence=0.95 | world_position=(0.087, -0.337, 0.844) | grasp_yaw=-81.9° | position_error=0.5cm | rotation_error=0.2°
+2026-08-28 15:20:03 | src.util.logging_configurator | INFO     | Scan 2 | saved outputs/scans/scan_02_agentview.png
+2026-08-28 15:20:03 | src.control.pickplace_controller | INFO     | Milk | joint-pose start | object=(0.198, -0.397, 0.883) | bin=(0.003, 0.158, 0.800)
+2026-08-28 15:20:04 | src.control.pickplace_controller | INFO     | Milk | RAISE started | target_position=(0.002, 0.402, 1.200)
+2026-08-28 15:20:04 | src.control.pickplace_controller | DEBUG    | Milk | RAISE progress | tick=20 | position_error=0.1934 m
+2026-08-28 15:20:05 | src.control.pickplace_controller | DEBUG    | Milk | RAISE progress | tick=40 | position_error=0.1158 m
+2026-08-28 15:20:05 | src.control.pickplace_controller | DEBUG    | Milk | RAISE progress | tick=60 | position_error=0.0370 m
+2026-08-28 15:20:05 | src.control.pickplace_controller | INFO     | Milk | RAISE completed | ticks=68 | position_error=0.0043 m | joint5_error=0.11° | joint6_error=0.69°
+2026-08-28 15:20:05 | src.control.pickplace_controller | INFO     | Milk | ALIGN_XY started | target_position=(0.198, -0.397, 1.200)
+2026-08-28 15:20:06 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=20 | position_error=0.7510 m
+2026-08-28 15:20:06 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=40 | position_error=0.6757 m
+2026-08-28 15:20:07 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=60 | position_error=0.5989 m
+2026-08-28 15:20:07 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=80 | position_error=0.5194 m
+2026-08-28 15:20:08 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=100 | position_error=0.4374 m
+2026-08-28 15:20:08 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=120 | position_error=0.3529 m
+2026-08-28 15:20:09 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=140 | position_error=0.2655 m
+2026-08-28 15:20:09 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=160 | position_error=0.1843 m
+2026-08-28 15:20:09 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=180 | position_error=0.1228 m
+2026-08-28 15:20:10 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=200 | position_error=0.0741 m
+2026-08-28 15:20:10 | src.control.pickplace_controller | DEBUG    | Milk | ALIGN_XY progress | tick=220 | position_error=0.0347 m
+2026-08-28 15:20:11 | src.control.pickplace_controller | INFO     | Milk | ALIGN_XY completed | ticks=239 | position_error=0.0032 m | joint5_error=0.18° | joint6_error=0.28°
+2026-08-28 15:20:11 | src.control.pickplace_controller | INFO     | Milk | DESCEND started | target_position=(0.198, -0.397, 1.003)
+2026-08-28 15:20:11 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND progress | tick=20 | position_error=0.1251 m
+2026-08-28 15:20:11 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND progress | tick=40 | position_error=0.0433 m
+2026-08-28 15:20:12 | src.control.pickplace_controller | INFO     | Milk | DESCEND completed | ticks=49 | position_error=0.0033 m | joint5_error=0.21° | joint6_error=0.50°
+2026-08-28 15:20:12 | src.control.pickplace_controller | INFO     | Milk | ORIENT_YAW started | target_yaw=-3.58°
+2026-08-28 15:20:12 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=20
+2026-08-28 15:20:12 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=40
+2026-08-28 15:20:13 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=60
+2026-08-28 15:20:13 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=80
+2026-08-28 15:20:13 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=100
+2026-08-28 15:20:14 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=120
+2026-08-28 15:20:14 | src.control.pickplace_controller | DEBUG    | Milk | ORIENT_YAW progress | tick=140
+2026-08-28 15:20:14 | src.control.pickplace_controller | INFO     | Milk | ORIENT_YAW completed | ticks=140 | yaw_error=0.67°
+2026-08-28 15:20:14 | src.control.pickplace_controller | INFO     | Milk | FINE_DESCEND started | target_position=(0.198, -0.397, 0.905)
+2026-08-28 15:20:14 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=20 | position_error=0.0854 m
+2026-08-28 15:20:15 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=40 | position_error=0.0716 m
+2026-08-28 15:20:15 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=60 | position_error=0.0576 m
+2026-08-28 15:20:15 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=80 | position_error=0.0435 m
+2026-08-28 15:20:16 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=100 | position_error=0.0294 m
+2026-08-28 15:20:16 | src.control.pickplace_controller | DEBUG    | Milk | FINE_DESCEND progress | tick=120 | position_error=0.0153 m
+2026-08-28 15:20:16 | src.control.pickplace_controller | INFO     | Milk | FINE_DESCEND completed | ticks=134 | position_error=0.0046 m | joint5_error=0.06° | joint6_error=0.09°
+2026-08-28 15:20:16 | src.control.pickplace_controller | INFO     | Milk | GRASP started | closing gripper | dwell_ticks=40
+2026-08-28 15:20:17 | src.control.pickplace_controller | INFO     | Milk | GRASP completed | object is held | dwell_ticks=40
+2026-08-28 15:20:17 | src.control.pickplace_controller | INFO     | Milk | LIFT started | target_position=(0.198, -0.397, 1.200)
+2026-08-28 15:20:18 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=20 | position_error=0.2195 m
+2026-08-28 15:20:18 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=40 | position_error=0.1369 m
+2026-08-28 15:20:18 | src.control.pickplace_controller | DEBUG    | Milk | LIFT progress | tick=60 | position_error=0.0569 m
+2026-08-28 15:20:19 | src.control.pickplace_controller | INFO     | Milk | LIFT verified | object rose 0.283 m while grasped
+2026-08-28 15:20:19 | src.control.pickplace_controller | INFO     | Milk | LIFT completed | ticks=73 | position_error=0.0044 m | joint5_error=0.05° | joint6_error=0.66°
+2026-08-28 15:20:19 | src.control.pickplace_controller | INFO     | Milk | REZERO_YAW started | target_yaw=-90.00°
+2026-08-28 15:20:19 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=20
+2026-08-28 15:20:20 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=40
+2026-08-28 15:20:20 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=60
+2026-08-28 15:20:20 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=80
+2026-08-28 15:20:21 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=100
+2026-08-28 15:20:21 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=120
+2026-08-28 15:20:21 | src.control.pickplace_controller | DEBUG    | Milk | REZERO_YAW progress | tick=140
+2026-08-28 15:20:21 | src.control.pickplace_controller | INFO     | Milk | REZERO_YAW completed | ticks=144 | yaw_error=-0.66°
+2026-08-28 15:20:21 | src.control.pickplace_controller | INFO     | Milk | MOVE_TO_BIN started | target_position=(0.003, 0.158, 1.200)
+2026-08-28 15:20:22 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=20 | position_error=0.5510 m
+2026-08-28 15:20:23 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=40 | position_error=0.5107 m
+2026-08-28 15:20:23 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=60 | position_error=0.4628 m
+2026-08-28 15:20:24 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=80 | position_error=0.4056 m
+2026-08-28 15:20:24 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=100 | position_error=0.3362 m
+2026-08-28 15:20:25 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=120 | position_error=0.2539 m
+2026-08-28 15:20:25 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=140 | position_error=0.1726 m
+2026-08-28 15:20:26 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=160 | position_error=0.0925 m
+2026-08-28 15:20:26 | src.control.pickplace_controller | DEBUG    | Milk | MOVE_TO_BIN progress | tick=180 | position_error=0.0139 m
+2026-08-28 15:20:26 | src.control.pickplace_controller | INFO     | Milk | MOVE_TO_BIN completed | ticks=182 | position_error=0.0030 m | joint5_error=0.13° | joint6_error=0.02° | yaw_error=0.28°
+2026-08-28 15:20:26 | src.control.pickplace_controller | INFO     | Milk | DESCEND_TO_BIN started | target_position=(0.003, 0.158, 0.950)
+2026-08-28 15:20:27 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=20 | position_error=0.1871 m
+2026-08-28 15:20:27 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=40 | position_error=0.1111 m
+2026-08-28 15:20:28 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=60 | position_error=0.0481 m
+2026-08-28 15:20:28 | src.control.pickplace_controller | DEBUG    | Milk | DESCEND_TO_BIN progress | tick=80 | position_error=0.0022 m
+2026-08-28 15:20:28 | src.control.pickplace_controller | INFO     | Milk | DESCEND_TO_BIN completed | ticks=83 | position_error=0.0007 m | joint5_error=0.07° | joint6_error=0.04° | yaw_error=-0.64°
+2026-08-28 15:20:28 | src.control.pickplace_controller | INFO     | Milk | RELEASE started | opening gripper | dwell_ticks=50
+2026-08-28 15:20:29 | src.control.pickplace_controller | INFO     | Milk | RELEASE completed | dwell_ticks=50 | placement finished
+2026-08-28 15:20:29 | src.execution.pickplace_executor | INFO     | Scan 3 | detected=2
+2026-08-28 15:20:29 | src.execution.pickplace_executor | INFO     | Scan 3 | Can detected | confidence=0.96 | world_position=(0.044, -0.123, 0.861) | grasp_yaw=-45.0° | position_error=1.0cm | rotation_error=n/a (rotation-symmetric)
+2026-08-28 15:20:29 | src.execution.pickplace_executor | INFO     | Scan 3 | Bread detected | confidence=0.95 | world_position=(0.086, -0.335, 0.844) | grasp_yaw=-83.8° | position_error=0.4cm | rotation_error=0.6°
+2026-08-28 15:20:29 | src.util.logging_configurator | INFO     | Scan 3 | saved outputs/scans/scan_03_agentview.png
+2026-08-28 15:20:29 | src.control.pickplace_controller | INFO     | Can | joint-pose start | object=(0.044, -0.123, 0.861) | bin=(0.198, 0.403, 0.800)
+2026-08-28 15:20:29 | src.control.pickplace_controller | INFO     | Can | RAISE started | target_position=(0.002, 0.157, 1.200)
+2026-08-28 15:20:30 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=20 | position_error=0.2082 m
+2026-08-28 15:20:30 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=40 | position_error=0.1514 m
+2026-08-28 15:20:30 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=60 | position_error=0.0812 m
+2026-08-28 15:20:31 | src.control.pickplace_controller | DEBUG    | Can | RAISE progress | tick=80 | position_error=0.0069 m
+2026-08-28 15:20:31 | src.control.pickplace_controller | INFO     | Can | RAISE completed | ticks=80 | position_error=0.0048 m | joint5_error=0.02° | joint6_error=0.75°
+2026-08-28 15:20:31 | src.control.pickplace_controller | INFO     | Can | ALIGN_XY started | target_position=(0.044, -0.123, 1.200)
+2026-08-28 15:20:31 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=20 | position_error=0.2185 m
+2026-08-28 15:20:32 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=40 | position_error=0.1427 m
+2026-08-28 15:20:32 | src.control.pickplace_controller | DEBUG    | Can | ALIGN_XY progress | tick=60 | position_error=0.0639 m
+2026-08-28 15:20:32 | src.control.pickplace_controller | INFO     | Can | ALIGN_XY completed | ticks=75 | position_error=0.0025 m | joint5_error=0.10° | joint6_error=0.02°
+2026-08-28 15:20:32 | src.control.pickplace_controller | INFO     | Can | DESCEND started | target_position=(0.044, -0.123, 0.981)
+2026-08-28 15:20:33 | src.control.pickplace_controller | DEBUG    | Can | DESCEND progress | tick=20 | position_error=0.1531 m
+2026-08-28 15:20:33 | src.control.pickplace_controller | DEBUG    | Can | DESCEND progress | tick=40 | position_error=0.0763 m
+2026-08-28 15:20:34 | src.control.pickplace_controller | DEBUG    | Can | DESCEND progress | tick=60 | position_error=0.0107 m
+2026-08-28 15:20:34 | src.control.pickplace_controller | INFO     | Can | DESCEND completed | ticks=62 | position_error=0.0038 m | joint5_error=0.26° | joint6_error=0.59°
+2026-08-28 15:20:34 | src.control.pickplace_controller | INFO     | Can | FINE_DESCEND started | target_position=(0.044, -0.123, 0.858)
+2026-08-28 15:20:34 | src.control.pickplace_controller | DEBUG    | Can | FINE_DESCEND progress | tick=20 | position_error=0.0867 m
+2026-08-28 15:20:34 | src.control.pickplace_controller | DEBUG    | Can | FINE_DESCEND progress | tick=40 | position_error=0.0466 m
+2026-08-28 15:20:35 | src.control.pickplace_controller | DEBUG    | Can | FINE_DESCEND progress | tick=60 | position_error=0.0058 m
+2026-08-28 15:20:35 | src.control.pickplace_controller | INFO     | Can | FINE_DESCEND completed | ticks=60 | position_error=0.0038 m | joint5_error=0.60° | joint6_error=0.29°
+2026-08-28 15:20:35 | src.control.pickplace_controller | INFO     | Can | GRASP started | closing gripper | dwell_ticks=40
+2026-08-28 15:20:35 | src.control.pickplace_controller | INFO     | Can | GRASP completed | object is held | dwell_ticks=40
+2026-08-28 15:20:35 | src.control.pickplace_controller | INFO     | Can | LIFT started | target_position=(0.044, -0.123, 1.200)
+2026-08-28 15:20:36 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=20 | position_error=0.2935 m
+2026-08-28 15:20:36 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=40 | position_error=0.2418 m
+2026-08-28 15:20:37 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=60 | position_error=0.1856 m
+2026-08-28 15:20:37 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=80 | position_error=0.1190 m
+2026-08-28 15:20:38 | src.control.pickplace_controller | DEBUG    | Can | LIFT progress | tick=100 | position_error=0.0439 m
+2026-08-28 15:20:38 | src.control.pickplace_controller | INFO     | Can | LIFT verified | object rose 0.333 m while grasped
+2026-08-28 15:20:38 | src.control.pickplace_controller | INFO     | Can | LIFT completed | ticks=110 | position_error=0.0048 m | joint5_error=0.03° | joint6_error=0.74°
+2026-08-28 15:20:38 | src.control.pickplace_controller | INFO     | Can | REZERO_YAW started | target_yaw=-85.80°
+2026-08-28 15:20:38 | src.control.pickplace_controller | INFO     | Can | REZERO_YAW completed | ticks=0 | yaw_error=0.00°
+2026-08-28 15:20:38 | src.control.pickplace_controller | INFO     | Can | MOVE_TO_BIN started | target_position=(0.198, 0.403, 1.200)
+2026-08-28 15:20:38 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=20 | position_error=0.4792 m
+2026-08-28 15:20:39 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=40 | position_error=0.3952 m
+2026-08-28 15:20:39 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=60 | position_error=0.3062 m
+2026-08-28 15:20:40 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=80 | position_error=0.2217 m
+2026-08-28 15:20:40 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=100 | position_error=0.1573 m
+2026-08-28 15:20:40 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=120 | position_error=0.1056 m
+2026-08-28 15:20:41 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=140 | position_error=0.0631 m
+2026-08-28 15:20:41 | src.control.pickplace_controller | DEBUG    | Can | MOVE_TO_BIN progress | tick=160 | position_error=0.0280 m
+2026-08-28 15:20:42 | src.control.pickplace_controller | INFO     | Can | MOVE_TO_BIN completed | ticks=176 | position_error=0.0037 m | joint5_error=0.15° | joint6_error=0.28° | yaw_error=-0.53°
+2026-08-28 15:20:42 | src.control.pickplace_controller | INFO     | Can | DESCEND_TO_BIN started | target_position=(0.198, 0.403, 0.950)
+2026-08-28 15:20:42 | src.control.pickplace_controller | DEBUG    | Can | DESCEND_TO_BIN progress | tick=20 | position_error=0.1777 m
+2026-08-28 15:20:42 | src.control.pickplace_controller | DEBUG    | Can | DESCEND_TO_BIN progress | tick=40 | position_error=0.0949 m
+2026-08-28 15:20:43 | src.control.pickplace_controller | DEBUG    | Can | DESCEND_TO_BIN progress | tick=60 | position_error=0.0100 m
+2026-08-28 15:20:43 | src.control.pickplace_controller | INFO     | Can | DESCEND_TO_BIN completed | ticks=61 | position_error=0.0026 m | joint5_error=0.20° | joint6_error=0.44° | yaw_error=-0.69°
+2026-08-28 15:20:43 | src.control.pickplace_controller | INFO     | Can | RELEASE started | opening gripper | dwell_ticks=50
+2026-08-28 15:20:44 | src.control.pickplace_controller | INFO     | Can | RELEASE completed | dwell_ticks=50 | placement finished
+2026-08-28 15:20:44 | src.execution.pickplace_executor | INFO     | Scan 4 | detected=1
+2026-08-28 15:20:44 | src.execution.pickplace_executor | INFO     | Scan 4 | Bread detected | confidence=0.95 | world_position=(0.086, -0.335, 0.844) | grasp_yaw=-84.0° | position_error=0.5cm | rotation_error=0.2°
+2026-08-28 15:20:44 | src.util.logging_configurator | INFO     | Scan 4 | saved outputs/scans/scan_04_agentview.png
+2026-08-28 15:20:44 | src.control.pickplace_controller | INFO     | Bread | joint-pose start | object=(0.086, -0.335, 0.844) | bin=(0.198, 0.158, 0.800)
+2026-08-28 15:20:44 | src.control.pickplace_controller | INFO     | Bread | RAISE started | target_position=(0.199, 0.403, 1.200)
+2026-08-28 15:20:44 | src.control.pickplace_controller | DEBUG    | Bread | RAISE progress | tick=20 | position_error=0.1846 m
+2026-08-28 15:20:45 | src.control.pickplace_controller | DEBUG    | Bread | RAISE progress | tick=40 | position_error=0.1021 m
+2026-08-28 15:20:46 | src.control.pickplace_controller | DEBUG    | Bread | RAISE progress | tick=60 | position_error=0.0219 m
+2026-08-28 15:20:46 | src.control.pickplace_controller | INFO     | Bread | RAISE completed | ticks=64 | position_error=0.0045 m | joint5_error=0.04° | joint6_error=0.67°
+2026-08-28 15:20:46 | src.control.pickplace_controller | INFO     | Bread | ALIGN_XY started | target_position=(0.086, -0.335, 1.200)
+2026-08-28 15:20:47 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=20 | position_error=0.7021 m
+2026-08-28 15:20:48 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=40 | position_error=0.6482 m
+2026-08-28 15:20:48 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=60 | position_error=0.5800 m
+2026-08-28 15:20:48 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=80 | position_error=0.4960 m
+2026-08-28 15:20:49 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=100 | position_error=0.4091 m
+2026-08-28 15:20:49 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=120 | position_error=0.3231 m
+2026-08-28 15:20:50 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=140 | position_error=0.2382 m
+2026-08-28 15:20:50 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=160 | position_error=0.1534 m
+2026-08-28 15:20:50 | src.control.pickplace_controller | DEBUG    | Bread | ALIGN_XY progress | tick=180 | position_error=0.0703 m
+2026-08-28 15:20:51 | src.control.pickplace_controller | INFO     | Bread | ALIGN_XY completed | ticks=197 | position_error=0.0032 m | joint5_error=0.20° | joint6_error=0.18°
+2026-08-28 15:20:51 | src.control.pickplace_controller | INFO     | Bread | DESCEND started | target_position=(0.086, -0.335, 0.964)
+2026-08-28 15:20:51 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND progress | tick=20 | position_error=0.1658 m
+2026-08-28 15:20:51 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND progress | tick=40 | position_error=0.0854 m
+2026-08-28 15:20:52 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND progress | tick=60 | position_error=0.0060 m
+2026-08-28 15:20:52 | src.control.pickplace_controller | INFO     | Bread | DESCEND completed | ticks=60 | position_error=0.0033 m | joint5_error=0.44° | joint6_error=0.47°
+2026-08-28 15:20:52 | src.control.pickplace_controller | INFO     | Bread | ORIENT_YAW started | target_yaw=-84.01°
+2026-08-28 15:20:52 | src.control.pickplace_controller | INFO     | Bread | ORIENT_YAW completed | ticks=8 | yaw_error=0.76°
+2026-08-28 15:20:52 | src.control.pickplace_controller | INFO     | Bread | FINE_DESCEND started | target_position=(0.086, -0.335, 0.841)
+2026-08-28 15:20:52 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=20 | position_error=0.1107 m
+2026-08-28 15:20:53 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=40 | position_error=0.0969 m
+2026-08-28 15:20:53 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=60 | position_error=0.0831 m
+2026-08-28 15:20:54 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=80 | position_error=0.0692 m
+2026-08-28 15:20:54 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=100 | position_error=0.0553 m
+2026-08-28 15:20:54 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=120 | position_error=0.0413 m
+2026-08-28 15:20:55 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=140 | position_error=0.0272 m
+2026-08-28 15:20:55 | src.control.pickplace_controller | DEBUG    | Bread | FINE_DESCEND progress | tick=160 | position_error=0.0131 m
+2026-08-28 15:20:55 | src.control.pickplace_controller | INFO     | Bread | FINE_DESCEND completed | ticks=171 | position_error=0.0047 m | joint5_error=0.12° | joint6_error=0.08°
+2026-08-28 15:20:55 | src.control.pickplace_controller | INFO     | Bread | GRASP started | closing gripper | dwell_ticks=40
+2026-08-28 15:20:56 | src.control.pickplace_controller | INFO     | Bread | GRASP completed | object is held | dwell_ticks=40
+2026-08-28 15:20:56 | src.control.pickplace_controller | INFO     | Bread | LIFT started | target_position=(0.086, -0.335, 1.200)
+2026-08-28 15:20:57 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=20 | position_error=0.2965 m
+2026-08-28 15:20:57 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=40 | position_error=0.2289 m
+2026-08-28 15:20:57 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=60 | position_error=0.1523 m
+2026-08-28 15:20:58 | src.control.pickplace_controller | DEBUG    | Bread | LIFT progress | tick=80 | position_error=0.0727 m
+2026-08-28 15:20:58 | src.control.pickplace_controller | INFO     | Bread | LIFT verified | object rose 0.348 m while grasped
+2026-08-28 15:20:58 | src.control.pickplace_controller | INFO     | Bread | LIFT completed | ticks=97 | position_error=0.0044 m | joint5_error=0.11° | joint6_error=0.68°
+2026-08-28 15:20:58 | src.control.pickplace_controller | INFO     | Bread | REZERO_YAW started | target_yaw=-90.00°
+2026-08-28 15:20:59 | src.control.pickplace_controller | DEBUG    | Bread | REZERO_YAW progress | tick=20
+2026-08-28 15:20:59 | src.control.pickplace_controller | INFO     | Bread | REZERO_YAW completed | ticks=25 | yaw_error=-0.65°
+2026-08-28 15:20:59 | src.control.pickplace_controller | INFO     | Bread | MOVE_TO_BIN started | target_position=(0.198, 0.158, 1.200)
+2026-08-28 15:20:59 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=20 | position_error=0.4295 m
+2026-08-28 15:21:00 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=40 | position_error=0.3497 m
+2026-08-28 15:21:00 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=60 | position_error=0.2671 m
+2026-08-28 15:21:01 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=80 | position_error=0.1819 m
+2026-08-28 15:21:01 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=100 | position_error=0.0924 m
+2026-08-28 15:21:02 | src.control.pickplace_controller | DEBUG    | Bread | MOVE_TO_BIN progress | tick=120 | position_error=0.0093 m
+2026-08-28 15:21:02 | src.control.pickplace_controller | INFO     | Bread | MOVE_TO_BIN completed | ticks=121 | position_error=0.0037 m | joint5_error=0.08° | joint6_error=0.19° | yaw_error=-0.30°
+2026-08-28 15:21:02 | src.control.pickplace_controller | INFO     | Bread | DESCEND_TO_BIN started | target_position=(0.198, 0.158, 0.850)
+2026-08-28 15:21:02 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=20 | position_error=0.2790 m
+2026-08-28 15:21:03 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=40 | position_error=0.1981 m
+2026-08-28 15:21:03 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=60 | position_error=0.1159 m
+2026-08-28 15:21:04 | src.control.pickplace_controller | DEBUG    | Bread | DESCEND_TO_BIN progress | tick=80 | position_error=0.0401 m
+2026-08-28 15:21:04 | src.control.pickplace_controller | INFO     | Bread | DESCEND_TO_BIN completed | ticks=96 | position_error=0.0013 m | joint5_error=0.00° | joint6_error=0.06° | yaw_error=-0.73°
+2026-08-28 15:21:04 | src.control.pickplace_controller | INFO     | Bread | RELEASE started | opening gripper | dwell_ticks=50
+2026-08-28 15:21:05 | src.control.pickplace_controller | INFO     | Bread | RELEASE completed | dwell_ticks=50 | placement finished
+2026-08-28 15:21:05 | src.util.logging_configurator | INFO     | TRAJECTORY | Saved 3751 compact states | trajectory=outputs\trajectory\trajectory.bin | model=outputs\trajectory\model.zip
+2026-08-28 15:21:05 | src.execution.pickplace_executor | INFO     | SUMMARY | objects_placed=4/4 | placed=Cereal, Milk, Can, Bread | simulation_duration=187.6 s
+2026-08-28 15:21:05 | src.util.logging_configurator | INFO     | Pipeline completed | objects_placed=4

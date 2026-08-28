@@ -1,9 +1,3 @@
-"""Convert pose-model camera coordinates into Robosuite world coordinates.
-
-The pose model describes objects relative to the agent-view camera. Robot
-motion, bins, and gripper yaw are instead defined in the MuJoCo world frame.
-"""
-
 from typing import Tuple
 
 import numpy as np

@@ -1,5 +1,3 @@
-"""Factory for the run observers configured for one pipeline run."""
-
 from src.recording.run_observer import BaseRunObserver
 from src.recording.scan_image_observer import ScanImageObserver
 from src.recording.trajectory_observer import TrajectoryObserver

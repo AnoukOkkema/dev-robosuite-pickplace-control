@@ -1,5 +1,3 @@
-"""Run observer that saves an annotated screenshot for every detection scan."""
-
 import logging
 import os
 
@@ -14,7 +12,7 @@ class ScanImageObserver(BaseRunObserver):
     """Save one annotated agent-view PNG per scan, plus a raw opening capture.
 
     The raw, unannotated first-scan frame is kept for documentation and the
-    portfolio case study; every scan after that gets its own annotated PNG
+    portfolio case study. Every scan after that gets its own annotated PNG
     with a box, label, and pose axes per detected object.
     """
 
@@ -52,13 +50,13 @@ class ScanImageObserver(BaseRunObserver):
         self._logger.info("Scan %d | saved %s", self._scan_index, output_path)
 
     def on_target_detected(self, class_name: str, pose_cam: tuple) -> None:
-        """Unused -- scan images are built from ``on_scan`` instead."""
+        """Unused. Scan images are built from ``on_scan`` instead."""
 
     def on_step(self, object_name: str, stage: Stage) -> None:
-        """Unused -- this observer only reacts to scans."""
+        """Unused. This observer only reacts to scans."""
 
     def on_run_end(self) -> None:
-        """Unused -- nothing to close."""
+        """Unused. Nothing to close."""
 
     def _annotate(
         self,

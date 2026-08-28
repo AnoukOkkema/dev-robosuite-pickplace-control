@@ -1,10 +1,3 @@
-"""Data objects shared by the simulated vision-guided pick-and-place pipeline.
-
-These dataclasses make configuration, perception output, robot commands, and
-per-object controller state explicit instead of passing unstructured mappings
-between the vision, execution, and control layers.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -14,13 +7,13 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
-    # Avoid importing the controller stage at runtime solely for annotations.
+    # Only needed for type hints, so don't import it at runtime.
     from src.control.stage import Stage
 
 
 @dataclass
 class DetectorConfig:
-    """Configuration for ONNX object detection.
+    """Settings for the ONNX object detector.
 
     Attributes:
         model_path: Path to the detector ONNX model.
@@ -41,17 +34,22 @@ class DetectorConfig:
 
 @dataclass
 class PoseConfig:
-    """Configuration for ONNX pose estimation.
+    """Settings for the ONNX pose estimator.
 
     Attributes:
         model_path: Path to the pose-estimation ONNX model.
         pos_image_size: Full-image input size for position inference.
         rotation_image_size: Object-crop input size for rotation inference.
+        rotation_symmetric_classes: Classes with no meaningful "correct"
+            rotation to compare against (e.g. a cylindrical can looks and
+            grasps the same at any yaw). Excluded from rotation-error
+            tracking against simulator ground truth.
     """
 
     model_path: str = "models/pose_estimator.onnx"
     pos_image_size: int = 224
     rotation_image_size: int = 128
+    rotation_symmetric_classes: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -216,7 +214,7 @@ class Detection:
 
 @dataclass
 class CropRegion:
-    """Inclusive-start, exclusive-end crop coordinates in image pixels.
+    """Crop coordinates in image pixels, where the start is included and the end is not.
 
     Attributes:
         y1: Top row of the crop.
@@ -274,14 +272,19 @@ class RunResult:
             detections, in centimetres, or ``None`` if nothing was detected.
         avg_pose_rotation_error_deg: Mean symmetry-aware geodesic angle
             between the vision-estimated and ground-truth object rotation,
-            in degrees, or ``None`` if nothing was detected.
+            in degrees, averaged over classes that aren't in
+            ``PoseConfig.rotation_symmetric_classes``, or ``None`` if
+            nothing scoreable was ever detected.
         detection_confidences: Per-object detector confidence (0-1), in pick
             order, so a client can track a running average as objects finish
             instead of only the final ``avg_detection_confidence``.
         pose_position_errors_cm: Per-object position error in centimetres,
             in pick order, matching ``detection_confidences`` one-for-one.
-        pose_rotation_errors_deg: Per-object rotation error in degrees,
-            in pick order, matching ``detection_confidences`` one-for-one.
+        pose_rotation_errors_deg: Per-object rotation error in degrees, in
+            pick order, matching ``detection_confidences`` one-for-one.
+            ``None`` for classes in ``PoseConfig.rotation_symmetric_classes``
+            (e.g. a can), since they have no meaningful "correct" rotation
+            to compare against.
     """
 
     placed: int
@@ -290,7 +293,7 @@ class RunResult:
     avg_pose_rotation_error_deg: Optional[float] = None
     detection_confidences: List[float] = field(default_factory=list)
     pose_position_errors_cm: List[float] = field(default_factory=list)
-    pose_rotation_errors_deg: List[float] = field(default_factory=list)
+    pose_rotation_errors_deg: List[Optional[float]] = field(default_factory=list)
 
 
 @dataclass
@@ -383,9 +386,10 @@ class LiveProgress(BaseModel):
     """Current size of one run's in-progress trajectory stream.
 
     Attributes:
-        ready: Whether the worker has written ``live.meta.json`` yet. It
-            appears within seconds of a run starting, well before the first
-            frame -- ``False`` only during that brief startup window.
+        ready: Whether the worker has written ``live.meta.json`` yet. This
+            file appears within seconds of a run starting, well before the
+            first frame. This is ``False`` only during that brief startup
+            window.
         status: The owning simulation job's latest status.
         nq: Number of generalized-position values in every frame.
         frame_count: Frames currently available from ``/live/frames``.

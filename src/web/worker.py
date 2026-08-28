@@ -1,5 +1,3 @@
-"""Run one headless pick-and-place request outside the web-server process."""
-
 from __future__ import annotations
 
 import json

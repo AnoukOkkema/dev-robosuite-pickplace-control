@@ -1,10 +1,3 @@
-"""Robosuite PickPlace task with a configurable Panda-base world offset.
-
-The standard Robosuite layout positions the Panda at a fixed reference point.
-This subclass keeps the task unchanged while allowing configuration to move the
-robot base for reachability experiments.
-"""
-
 import numpy as np
 from robosuite.environments.manipulation.pick_place import PickPlace
 
@@ -12,8 +5,8 @@ from robosuite.environments.manipulation.pick_place import PickPlace
 class PickPlaceWithRobotOffset(PickPlace):
     """Apply a world-frame robot offset before MuJoCo compiles the model.
 
-    This small environment subclass leaves Robosuite's PickPlace task intact
-    while making the robot position configurable for reachability experiments.
+    This small environment subclass leaves Robosuite's PickPlace task intact.
+    It just makes the robot position configurable, for reachability experiments.
 
     Attributes:
         robot_base_offset: XYZ world-frame offset applied to the Panda base.

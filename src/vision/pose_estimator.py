@@ -1,5 +1,3 @@
-"""Estimate each detected object's 3D camera-frame position and orientation."""
-
 import logging
 from typing import Tuple
 

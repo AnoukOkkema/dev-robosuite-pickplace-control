@@ -1,14 +1,3 @@
-"""Connect the simulation, vision models, and controller for a complete run.
-
-The executor owns one Robosuite episode. Per configured object it captures an
-agent-view image, detects the object, estimates its pose, converts that to
-world coordinates, and asks the controller to pick and place it.
-
-Video recording, trajectory recording, and frame annotation live outside the
-executor as :class:`~src.recording.run_observer.BaseRunObserver` implementations
-that watch the run through its lifecycle hooks.
-"""
-
 import logging
 import time
 from pathlib import Path
@@ -42,9 +31,9 @@ class PickPlaceExecutor:
     """Coordinate one simulated vision-guided pick-and-place episode.
 
     Before every placement, the executor captures the current agent-view image,
-    detects all visible configured objects, estimates their poses, and selects
-    only the next required class. Scanning again after a release lets objects
-    that were hidden behind another object become available.
+    detects all visible configured objects, and estimates their poses. Then it
+    selects only the next required class. Scanning again after a release lets
+    objects that were hidden behind another object become available.
 
     Attributes:
         config: Typed application configuration.
@@ -83,8 +72,8 @@ class PickPlaceExecutor:
                 every controller step the executor checks this path: as long
                 as a file exists there, the simulation waits before stepping
                 again. ``None`` means the run cannot be paused.
-            observers: Callbacks that watch the run (recorders, visualizers);
-                see :class:`BaseRunObserver` for the hooks.
+            observers: Callbacks that watch the run (recorders, visualizers).
+                See :class:`BaseRunObserver` for the hooks.
         """
         self.config = config
         self.detector = detector
@@ -96,23 +85,23 @@ class PickPlaceExecutor:
         self._pause_flag_path = pause_flag_path
         self._observers = list(observers)
 
-        # Direct MuJoCo capture instead of Robosuite's camera pipeline: one
-        # lazily created renderer per camera, with collision geometry hidden
-        # to match what the interactive viewer shows.
+        # Renders frames directly through MuJoCo instead of using Robosuite's
+        # camera pipeline. Creates one renderer per camera, lazily, and hides
+        # collision geometry to match what the interactive viewer shows.
         self._renderers: dict[str, mujoco.Renderer] = {}
         self._scene_option = mujoco.MjvOption()
         self._scene_option.geomgroup[0] = 0
 
-        # Per-run measurement of the vision models against simulator ground
-        # truth; aggregated into the RunResult that run() returns.
+        # Per-run measurements of the vision models against the simulator's
+        # ground truth. Aggregated into the RunResult that run() returns.
         self._detection_scan_index = 0
         self._detection_confidences: list[float] = []
         self._pose_position_errors_m: list[float] = []
-        self._pose_rotation_errors_deg: list[float] = []
+        self._pose_rotation_errors_deg: list[float | None] = []
 
-        # 180-degree local symmetry: without it, objects that look identical
-        # rotated 180 degrees about their own up-axis would be penalized for
-        # visually correct rotations.
+        # Accounts for 180-degree local symmetry. Without this, objects that
+        # look identical when rotated 180 degrees about their own up-axis
+        # would be penalized for rotations that are visually correct.
         self.symmetry_local_rotations = (
             np.eye(3),
             np.diag([-1.0, -1.0, 1.0]),
@@ -150,11 +139,12 @@ class PickPlaceExecutor:
             controller=str(Path("config", "joint_position_controller.json"))
         )
 
-        # Robosuite's own camera pipeline stays off (has_offscreen_renderer /
-        # use_camera_obs): with use_camera_obs=True it renders a full agentview
-        # frame on every single env.step() while this executor only needs one
-        # frame per detection scan (see _render_camera_frame). Off-screen
-        # rendering also conflicts with the interactive viewer on macOS.
+        # Robosuite's own camera pipeline (has_offscreen_renderer /
+        # use_camera_obs) stays off. With use_camera_obs=True, it renders a
+        # full agentview frame on every single env.step(), but this executor
+        # only needs one frame per detection scan (see _render_camera_frame).
+        # Off-screen rendering also conflicts with the interactive viewer on
+        # macOS.
         env = suite.make(
             PickPlaceWithRobotOffset.__name__,
             robots="Panda",
@@ -245,7 +235,7 @@ class PickPlaceExecutor:
     @staticmethod
     def _keep_best_per_class(detections: list[Detection]) -> list[Detection]:
         """Keeps only the highest-confidence detection per class."""
-        
+
         best_by_class: dict[int, Detection] = {}
         for detection in detections:
             current_best = best_by_class.get(detection.class_id)
@@ -263,9 +253,9 @@ class PickPlaceExecutor:
         Args:
             sought_class_name: The object class this scan is looking for. Other
                 configured classes visible in the same frame are detected too,
-                but only this one's confidence/pose-error is recorded --
-                otherwise an object sitting in view across several scans before
-                its own turn would be double-counted in the run stats.
+                but only this one's confidence and pose error are recorded.
+                Otherwise, an object that stays in view across several scans
+                before its own turn would be double-counted in the run stats.
         """
         self._detection_scan_index += 1
         agentview_frame = self._capture_agentview_frame()
@@ -321,10 +311,15 @@ class PickPlaceExecutor:
                 )
             )
 
+            rotation_display = (
+                "n/a (rotation-symmetric)"
+                if rotation_error_deg is None
+                else f"{rotation_error_deg:.1f}°"
+            )
             self.logger.info(
                 "Scan %d | %s detected | confidence=%.2f | "
                 "world_position=(%.3f, %.3f, %.3f) | grasp_yaw=%.1f° | "
-                "position_error=%.1fcm | rotation_error=%.1f°",
+                "position_error=%.1fcm | rotation_error=%s",
                 self._detection_scan_index,
                 class_name,
                 detection.confidence,
@@ -333,7 +328,7 @@ class PickPlaceExecutor:
                 world_xpos[2],
                 yaw_deg,
                 position_error_m * 100,
-                rotation_error_deg,
+                rotation_display,
             )
 
         targets.sort(key=self._pick_order_key)
@@ -354,19 +349,24 @@ class PickPlaceExecutor:
 
     def _pose_errors(
         self, class_name: str, world_xpos: np.ndarray, world_xmat: np.ndarray
-    ) -> tuple[float, float]:
+    ) -> tuple[float, float | None]:
         """Compare a predicted world pose against the simulator's true pose.
 
         Returns:
-            Position error in metres and rotation error in degrees.
+            Position error in metres, and rotation error in degrees. The
+            rotation error is ``None`` for classes in
+            ``PoseConfig.rotation_symmetric_classes`` (e.g. a can), since
+            they have no meaningful "correct" rotation to compare against.
         """
         body_id = self.env.obj_body_id[class_name]
         true_pos = self.env.sim.data.body_xpos[body_id]
+        position_error_m = float(np.linalg.norm(world_xpos - true_pos))
+
+        if class_name in self.config.pose.rotation_symmetric_classes:
+            return position_error_m, None
+
         true_mat = self.env.sim.data.body_xmat[body_id].reshape(3, 3)
-        return (
-            float(np.linalg.norm(world_xpos - true_pos)),
-            self._rotation_error_deg(world_xmat, true_mat),
-        )
+        return position_error_m, self._rotation_error_deg(world_xmat, true_mat)
 
     def _rotation_error_deg(
         self, rot_pred_world: np.ndarray, rot_target_world: np.ndarray
@@ -389,11 +389,17 @@ class PickPlaceExecutor:
             return sum(values) / len(values) if values else None
 
         position_errors_cm = [error * 100 for error in self._pose_position_errors_m]
+        # Rotation-symmetric classes (e.g. Can) contribute None here, since
+        # they have no meaningful "correct" rotation. Excluded from the
+        # average so they can't drag it down with meaningless noise.
+        scored_rotation_errors = [
+            error for error in self._pose_rotation_errors_deg if error is not None
+        ]
         return RunResult(
             placed=placed,
             avg_detection_confidence=average(self._detection_confidences),
             avg_pose_position_error_cm=average(position_errors_cm),
-            avg_pose_rotation_error_deg=average(self._pose_rotation_errors_deg),
+            avg_pose_rotation_error_deg=average(scored_rotation_errors),
             detection_confidences=list(self._detection_confidences),
             pose_position_errors_cm=position_errors_cm,
             pose_rotation_errors_deg=list(self._pose_rotation_errors_deg),

@@ -1,10 +1,3 @@
-"""Run the ordered robot stages needed to pick one object and place it in a bin.
-
-This module is the task-level controller. It chooses the next Cartesian goal
-for each named stage, while :mod:`joint_motion` converts that goal into small
-absolute Panda joint-position actions.
-"""
-
 import logging
 from collections.abc import Callable
 

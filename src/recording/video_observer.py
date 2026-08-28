@@ -1,5 +1,3 @@
-"""Run observer that records an annotated MP4 for each camera."""
-
 import logging
 
 import cv2
@@ -60,7 +58,7 @@ class VideoObserver(BaseRunObserver):
         """Resolve the front camera and arm the first-frame skip.
 
         The reset state contains newly placed objects before the first
-        simulation update, so the first captured frame is skipped -- it
+        simulation update, so the first captured frame is skipped. It
         would otherwise show objects still settling into view.
         """
         self._executor = executor
@@ -71,7 +69,7 @@ class VideoObserver(BaseRunObserver):
         self._skip_first_frame = True
 
     def on_scan(self, agentview_frame: np.ndarray, poses_cam: list) -> None:
-        """Unused -- the video overlay is driven by ``on_target_detected`` instead."""
+        """Unused. The video overlay is driven by ``on_target_detected`` instead."""
 
     def on_target_detected(self, class_name: str, pose_cam: tuple) -> None:
         """Remember the detected pose so the next frames can be annotated with it."""

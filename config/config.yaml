@@ -1,91 +1,153 @@
 DETECTOR:
+  # ONNX detector loaded for inference.
   MODEL_PATH: "models/yolo_detector.onnx"
+  # Class names indexed by the model's class ID (fixed training order).
   CLASS_NAMES: ["Bread", "Can", "Cereal", "Milk"]
+  # Square input resolution in pixels.
   IMAGE_SIZE: 640
+  # Minimum detection confidence needed to keep a box.
   CONF_THRESHOLD: 0.50
+  # IoU threshold used by NMS to suppress overlapping boxes.
   IOU_THRESHOLD: 0.45
 
 POSE:
+  # ONNX PoseEstimator model.
   MODEL_PATH: "models/pose_estimator.onnx"
+  # Input size of the full agentview frame fed to the xyz stream.
   POS_IMAGE_SIZE: 320
+  # Input size of the cropped object image fed to the rotation stream.
   ROTATION_IMAGE_SIZE: 128
+  # Classes with no meaningful "correct" rotation to compare against. A
+  # cylindrical can looks and grasps the same at any yaw, so its rotation
+  # error against simulator ground truth would just be noise. Excluded from
+  # rotation-error tracking and logging. Position is unaffected.
+  ROTATION_SYMMETRIC_CLASSES: ["Can"]
 
 ENVIRONMENT:
-  # Fixed scene for repeatable controller tuning.
+  # robosuite scene layout seed. Set to null to randomize the layout every run.
+  # A fixed seed is used here so controller tuning stays repeatable.
   SEED: null
-  # World-frame robot base offset.
+  # World-frame [x, y, z] offset added on top of robosuite's own default
+  # Panda base position.
   ROBOT_BASE_OFFSET: [0.10, 0.10, 0.0]
 
 EXECUTION:
+  # Classes and the order the run picks and places them in. Independent of
+  # DETECTOR.CLASS_NAMES's alphabetical class ID order.
   TARGET_CLASSES: ["Cereal", "Milk", "Can", "Bread"]
 
 VISUALIZATION:
-  # Enable only when creating an MP4 for the README or a motion review.
+  # Record agent-view/front-view MP4s. Enable only when creating an MP4 for
+  # the README or a motion review.
   VIDEO_ENABLED: false
+  # Base output path for the generated MP4s.
   VIDEO_PATH: "outputs/pickplace.mp4"
+  # Output video playback frame rate.
   VIDEO_FPS: 30
-  # Render one Full-HD frame every six controller steps to limit render time.
+  # Controller ticks between recorded frames. Render one Full-HD frame every
+  # six controller steps to limit render time.
   VIDEO_CAPTURE_EVERY_TICKS: 6
-  # Export compact qpos states and a reusable MJCF scene for the web player.
+  # Export a compact qpos trajectory and a reusable MJCF scene, consumed by
+  # the web API (see README).
   TRAJECTORY_ENABLED: false
+  # Output binary path for the recorded trajectory.
   TRAJECTORY_PATH: "outputs/trajectory/trajectory.bin"
+  # Output ZIP path for the packaged MJCF scene model.
   TRAJECTORY_MODEL_PATH: "outputs/trajectory/model.zip"
   # Save an annotated PNG per detection scan, plus one raw opening capture.
   SCAN_IMAGES_ENABLED: true
+  # Directory the scan PNGs are written into.
   SCAN_IMAGES_DIR: "outputs/scans"
 
 MOTION:
-  # J5/J6 are solved for a vertical-down gripper.
+  # robosuite joint name for wrist joint J5. Set to null to disable the
+  # joint J5+J6 solve in favor of a J6-only fallback. J5/J6 are solved
+  # together to keep the gripper pointing straight down.
   JOINT5_NAME: "robot0_joint5"
+  # Proportional gain for the J5 tracking correction.
   JOINT5_KP: 4.0
+  # J5 convergence tolerance for "pointing straight down".
   JOINT5_DOWN_TOLERANCE_DEG: 1.0
+  # robosuite joint name for wrist joint J6.
   JOINT6_NAME: "robot0_joint6"
+  # If true, hard-overwrites the final J6 target after IK instead of
+  # trusting convergence.
   LOCK_JOINT6: false
+  # Proportional gain for the J6 tracking correction.
   JOINT6_KP: 4.0
+  # J6 convergence tolerance.
   JOINT6_DOWN_TOLERANCE_DEG: 1.0
+  # Proportional gain for the explicit joint 7 branch of JointMotion.action().
   JOINT7_KP: 4.0
+  # Arm-action array index of the yaw joint (J7).
   YAW_JOINT_INDEX: 6
+  # Per-tick cap on yaw-stage correction.
   YAW_MAX_STEP_DEG: 4.0
+  # Per-tick cap on the IK solution's largest joint-angle component.
   MAX_JOINT_DELTA: 0.05
-  # Separate limit for the vertical wrist correction.
+  # Separate, larger per-tick cap for the J5/J6 tracking correction.
   MAX_WRIST_JOINT_DELTA: 0.10
+  # Proportional gain on Cartesian position error.
   POSITION_KP: 4.0
+  # Proportional gain on orientation error.
   ORIENTATION_KP: 1.0
+  # Base weight of orientation correction. Stays 0.0 unless a stage
+  # explicitly holds world yaw.
   ORIENTATION_WEIGHT: 0.0
+  # Default per-tick Cartesian step cap in metres. Stages may override it.
   MAX_POSITION_DELTA: 0.03
+  # Per-tick cap in radians on orientation correction.
   MAX_ORIENTATION_DELTA: 0.10
+  # Levenberg damping coefficient in the damped-least-squares IK solve.
   IK_DAMPING: 0.03
-  # Robotiq85 finger actuator multiplier.
+  # Multiplier applied to the Robotiq85 finger actuator force.
   GRIPPER_CLAMP_FORCE_MULTIPLIER: 1.05
 
 STAGES:
+  # Shared world-Z used for safe horizontal travel between stages.
   APPROACH_HEIGHT: 1.2
+  # Z clearance above the object for the coarse descend stage.
   DESCEND_CLEARANCE: 0.12
+  # Per-class final-approach Z offset, correcting each mesh's real contact
+  # height against its reported origin.
   FINE_DESCEND_OFFSETS:
     Cereal: 0.018
     Milk: 0.022
     Can: -0.003
     Bread: -0.003
+  # Per-class cap on per-tick position change during fine descent, gentler
+  # than MAX_POSITION_DELTA.
   FINE_DESCEND_MAX_POSITION_DELTAS:
     Bread: 0.005
     Can: 0.015
     Cereal: 0.015
     Milk: 0.005
-  # Absolute EEF world-Z at release.
+  # Per-class absolute end-effector world-Z at release.
   BIN_RELEASE_HEIGHTS:
     Cereal: 0.95
     Milk: 0.95
     Can: 0.95
     Bread: 0.85
+  # Default Cartesian convergence tolerance.
   POSITION_TOLERANCE: 0.005
+  # Tighter tolerance specific to the bin-release stage.
   BIN_RELEASE_TOLERANCE: 0.005
+  # Yaw convergence tolerance.
   YAW_TOLERANCE_DEG: 0.8
+  # Ticks the gripper is held closing before checking the grasp.
   GRASP_DWELL_TICKS: 40
-  # Object must rise this far while still grasped before transport to a bin.
+  # Minimum object rise, in metres, required before a lift counts as
+  # successful. The object must rise this far while still grasped before
+  # transport to a bin.
   GRASP_MIN_LIFT_HEIGHT: 0.03
+  # Constant added to the detected grasp yaw before symmetry-folding.
   GRASP_YAW_OFFSET_DEG: 0.0
+  # Ticks the gripper is held opening on release.
   RELEASE_DWELL_TICKS: 50
+  # Per-stage tick budget. Exceeding it raises instead of correcting forever.
   MAX_TICKS_PER_STAGE: 1500
+  # Interval for periodic progress log lines.
   LOG_EVERY_TICKS: 20
+  # Gripper actuator command values, open and closed.
   OPEN_GRIPPER: -0.05
   CLOSED_GRIPPER: 1.0

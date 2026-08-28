@@ -24,3 +24,8 @@ repos:
           - --max-line-length=88
           - --extend-ignore=E203,W503
           - --exclude=.git,.venv,__pycache__,outputs,logs
+          # main.py imports LoggingConfigurator and calls
+          # suppress_robosuite_warnings() before its other imports, on
+          # purpose, since robosuite prints its startup warnings as soon as
+          # it's imported. That's what triggers E402 here.
+          - --per-file-ignores=main.py:E402

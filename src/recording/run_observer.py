@@ -1,5 +1,3 @@
-"""Hook contract for components that watch a PickPlaceExecutor run."""
-
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -8,11 +6,11 @@ from src.control.stage import Stage
 
 
 class BaseRunObserver(ABC):
-    """Watches a run from the outside; the executor calls these hooks.
+    """Watches a run from the outside. The executor calls these hooks.
 
-    This keeps recording and visualization out of the pick-and-place code:
-    the executor only reports what happens, observers decide what to do
-    with it. The hooks follow the lifecycle of one run:
+    This keeps recording and visualization out of the pick-and-place code.
+    The executor only reports what happens, and observers decide what to
+    do with it. The hooks follow the lifecycle of one run:
 
     ``on_run_start`` -> per scan: ``on_scan``, per object: ``on_target_detected``
     -> ``on_step`` (many) -> ... -> ``on_run_end``
@@ -30,7 +28,7 @@ class BaseRunObserver(ABC):
             agentview_frame: Full, uncropped BGR agent-view capture the scan
                 ran detection on.
             poses_cam: ``(class_name, box, xyz_cam, rot_cam)`` per detected
-                target-class object -- the detection box in cropped
+                target-class object. This is the detection box in cropped
                 agent-view pixels plus the camera-frame pose.
         """
 
@@ -40,7 +38,7 @@ class BaseRunObserver(ABC):
 
         Args:
             class_name: Detected object class.
-            pose_cam: ``(class_name, box, xyz_cam, rot_cam)`` -- the detection
+            pose_cam: ``(class_name, box, xyz_cam, rot_cam)``, the detection
                 box in cropped agent-view pixels plus the camera-frame pose.
         """
 

@@ -1,5 +1,3 @@
-"""Job registry for headless pick-and-place simulations queued through the web API."""
-
 from __future__ import annotations
 
 import json
@@ -124,8 +122,8 @@ class SimulationJobs:
     def read_live_meta(self, job_id: str) -> dict | None:
         """Return the live-stream header, or ``None`` before the worker writes it.
 
-        See ``TrajectoryRecorder.start`` -- the header appears within seconds of
-        a run starting, well before its first frame.
+        See ``TrajectoryRecorder.start``. The header appears within seconds
+        of a run starting, well before its first frame.
         """
         live_meta_path = self.run_directory(job_id) / "live.meta.json"
         if not live_meta_path.is_file():

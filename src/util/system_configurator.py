@@ -1,9 +1,3 @@
-"""Load human-editable YAML settings into typed Python configuration objects.
-
-Keeping parsing here separates configuration-file spelling and validation from
-the vision, simulation, and robot-control code that consumes the settings.
-"""
-
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -106,6 +100,9 @@ class ConfigAssembler:
                     model_path=raw["POSE"]["MODEL_PATH"],
                     pos_image_size=raw["POSE"]["POS_IMAGE_SIZE"],
                     rotation_image_size=raw["POSE"]["ROTATION_IMAGE_SIZE"],
+                    rotation_symmetric_classes=raw["POSE"].get(
+                        "ROTATION_SYMMETRIC_CLASSES", []
+                    ),
                 ),
                 environment=EnvironmentConfig(
                     seed=raw["ENVIRONMENT"]["SEED"],
@@ -190,7 +187,6 @@ class ConfigAssembler:
             raise KeyError(f"Missing required key in config file: {error}") from error
         except TypeError as error:
             raise TypeError(f"Invalid data in config structure: {error}") from error
-
 
 
 class SystemConfigurator:

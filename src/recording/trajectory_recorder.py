@@ -1,5 +1,3 @@
-"""Save a cached MuJoCo model and compact browser-playback trajectories."""
-
 from __future__ import annotations
 
 import json
@@ -60,12 +58,13 @@ class TrajectoryRecorder:
     def start(self, nq: int, object_names: list[str]) -> None:
         """Open the live-progress stream for one run.
 
-        Call once, as soon as the compiled model's ``nq`` and the run's
-        object order are known -- before the first :meth:`capture` -- so a
-        browser polling ``live.bin`` can render seconds into a run instead
-        of only after :meth:`export` at the very end. Object and stage names
-        must be fixed up front because ``live.bin`` is append-only: unlike
-        the final trajectory, there is no second pass to collect them.
+        Call this once, as soon as the compiled model's ``nq`` and the run's
+        object order are known, and before the first :meth:`capture` call.
+        That way a browser polling ``live.bin`` can render seconds into a
+        run instead of waiting for :meth:`export` at the very end. Object
+        and stage names must be fixed up front, because ``live.bin`` is
+        append-only. Unlike the final trajectory, there is no second pass
+        to collect them.
 
         Args:
             nq: Number of generalized-position values in every frame.
@@ -123,8 +122,9 @@ class TrajectoryRecorder:
         """Write one fixed-stride record to the live stream and flush it.
 
         The record layout is ``time:f32, qpos:f32[nq], object:u8, stage:u8,
-        pad:u8[2]`` -- 4-byte aligned throughout, so a reader can decode any
-        whole number of trailing records straight into ``Float32Array``s.
+        pad:u8[2]``. It stays 4-byte aligned throughout, so a reader can
+        decode any whole number of trailing records straight into
+        ``Float32Array``s.
         """
         qpos_bytes = np.asarray(frame["qpos"], dtype=np.float32).tobytes()
         object_code = self._live_object_codes.get(frame.get("object_name"), 0)
@@ -149,8 +149,9 @@ class TrajectoryRecorder:
 
         Call this right after the model compiles so a browser player can
         show the scene immediately, rather than waiting for the whole run to
-        finish. Idempotent: skips work if the ZIP already exists, and safe
-        to leave uncalled since :meth:`export` also packages the model.
+        finish. Idempotent: it skips work if the ZIP already exists. It's
+        also safe to leave uncalled, since :meth:`export` packages the
+        model too.
 
         Args:
             model: Robosuite model wrapper used during the recorded run.

@@ -1,5 +1,3 @@
-"""Find known pick-and-place objects in an agent-view image with YOLO ONNX."""
-
 import logging
 from typing import List
 
@@ -121,7 +119,7 @@ class OnnxDetector:
         iou_threshold,
     ) -> List[Detection]:
         """Convert raw YOLO predictions to original-image detections."""
-        # YOLO exports anchors as columns; OpenCV expects rows for NMS.
+        # YOLO exports anchors as columns. OpenCV expects rows for NMS.
         predictions = output.T  # (num_anchors, 4 + nc)
 
         boxes_cxcywh = predictions[:, :4]

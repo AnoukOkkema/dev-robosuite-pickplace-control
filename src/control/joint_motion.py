@@ -1,11 +1,3 @@
-"""Convert pick-and-place pose goals into safe Panda joint-position actions.
-
-The Robosuite controller accepts an absolute target for each Panda joint, but
-the pick-and-place state machine works with Cartesian goals such as "move
-above the cereal box". This module bridges those two representations using
-damped differential inverse kinematics.
-"""
-
 import mujoco
 import numpy as np
 from robosuite.utils.control_utils import orientation_error
@@ -97,9 +89,9 @@ class JointMotion:
     def downward_joint6_target(self) -> float:
         """Find the Joint-6 angle that makes the gripper point downward.
 
-        This is used when J5 is unavailable. The optimisation tests allowed
-        Joint-6 angles with forward kinematics and chooses the smallest tool
-        tilt from the negative world Z direction.
+        This is used when J5 is unavailable. It tests allowed Joint-6 angles
+        using forward kinematics and picks the one with the smallest tool
+        tilt from straight down (negative world Z).
         """
 
         current_joints = self.joint_positions
@@ -109,7 +101,7 @@ class JointMotion:
             """Return vertical-down tilt error for a candidate Joint-6 angle."""
             candidate = current_joints.copy()
             candidate[self.joint6_index] = angle
-            # Evaluate candidate forward kinematics without stepping physics.
+            # Test candidate forward kinematics without stepping physics.
             self._set_joint_positions(candidate)
             return 1.0 + self.eef_pose()[1][2, 2]
 
@@ -122,7 +114,7 @@ class JointMotion:
             )
             return float(result.x)
         finally:
-            # The temporary FK evaluation must never change the live robot pose.
+            # This temporary FK check must never change the live robot pose.
             self._set_joint_positions(current_joints)
 
     def vertical_down_wrist_targets(self) -> WristTargets:

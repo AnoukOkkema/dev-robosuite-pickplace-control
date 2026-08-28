@@ -1,5 +1,3 @@
-"""Serve cached model assets and queued headless pick-and-place simulations."""
-
 from __future__ import annotations
 
 import subprocess
@@ -83,8 +81,8 @@ def resume_simulation(job_id: str) -> SimulationJob:
 def stop_simulation(job_id: str) -> SimulationJob:
     """Terminate a run in progress. Whatever it streamed live is kept.
 
-    Unlike a crash, this is a requested stop: the job is reported as
-    "stopped" rather than "failed", and the player is expected to fall back
+    Unlike a crash, this is a requested stop. The job is reported as
+    "stopped" rather than "failed". The player is expected to fall back
     to its partial live view instead of fetching a final trajectory that
     was never written.
     """
@@ -116,7 +114,7 @@ def simulation_trajectory(job_id: str) -> FileResponse:
 def simulation_live_progress(job_id: str) -> LiveProgress:
     """Return how many trajectory frames a running simulation has streamed.
 
-    Unlike ``/trajectory``, this works before the job completes -- the
+    Unlike ``/trajectory``, this works before the job completes. The
     player polls it to grow a live view instead of waiting for the run to
     finish.
     """
@@ -147,10 +145,10 @@ def simulation_live_frames(
 ) -> Response:
     """Return raw, newly-available live frames starting at frame ``from_``.
 
-    The response is a byte-exact slice of ``live.bin`` -- see
-    :meth:`TrajectoryRecorder._append_live_frame` for the record layout --
-    truncated to whole frames so a partially-written trailing record is
-    never served.
+    The response is a byte-exact slice of ``live.bin``. See
+    :meth:`TrajectoryRecorder._append_live_frame` for the record layout.
+    It's truncated to whole frames so a partially-written trailing record
+    is never served.
     """
     jobs.get(job_id)
     meta = jobs.read_live_meta(job_id)

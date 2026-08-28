@@ -1,5 +1,3 @@
-"""Run observer that records a run for the browser player."""
-
 import logging
 
 from src.control.stage import Stage

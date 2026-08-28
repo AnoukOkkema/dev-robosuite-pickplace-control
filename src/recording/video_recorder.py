@@ -1,5 +1,3 @@
-"""Record separate Full-HD MP4 videos for the agent and front cameras."""
-
 import logging
 from pathlib import Path
 

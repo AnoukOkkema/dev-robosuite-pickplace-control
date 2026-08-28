@@ -1,17 +1,7 @@
-"""Start the simulated vision-guided robot pick-and-place task.
-
-Run directly for the interactive viewer (``uv run mjpython main.py`` on
-macOS, ``uv run python main.py`` on Windows/Linux) or for MP4 recording
-(``uv run python -m main`` with ``VIDEO_ENABLED`` on); the README explains
-why macOS needs a different interpreter for the two. The web API's worker
-(``src/web/worker.py``) imports and calls :func:`main` with its own prepared
-config instead.
-"""
-
 from src.util.logging_configurator import LoggingConfigurator
 
 # Must run before robosuite is imported (below, transitively via
-# PoseDatasetGenerator/PoseVisualizer) -- robosuite emits its startup
+# PoseDatasetGenerator/PoseVisualizer). Robosuite emits its startup
 # warnings at import time.
 LoggingConfigurator.suppress_robosuite_warnings()
 
@@ -35,7 +25,7 @@ def main(
 
     Args:
         config: Fully resolved settings, or ``None`` to load config.yaml.
-        has_renderer: Whether to open an interactive MuJoCo viewer; ``None``
+        has_renderer: Whether to open an interactive MuJoCo viewer. ``None``
             opens one exactly when no MP4 is being recorded.
         pause_flag_path: Path of a flag file that pauses the run. After every
             controller step the executor checks this path: as long as a file
@@ -66,8 +56,12 @@ def main(
 
     if has_renderer is None:
         # Without an explicit choice, open the viewer exactly when no MP4 is
-        # being recorded: the interactive viewer and headless video rendering
-        # cannot share one process (see README).
+        # being recorded. Combining them is possible (confirmed on Windows),
+        # but pointless: video capture alone roughly doubles the time per
+        # stage, since it renders an extra Full-HD frame per camera on top
+        # of what the viewer already draws. Trajectory recording has no such
+        # cost (it only records qpos, no rendering), so it doesn't affect
+        # this default at all.
         has_renderer = not visualization.video_enabled
 
     executor = PickPlaceExecutor(
