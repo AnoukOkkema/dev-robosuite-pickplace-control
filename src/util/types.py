@@ -95,7 +95,7 @@ class VisualizationConfig:
     """
 
     video_enabled: bool = False
-    video_path: str = "outputs/pickplace.mp4"
+    video_path: str = "outputs/videos/pickplace.mp4"
     video_fps: int = 10
     video_capture_every_ticks: int = 6
     trajectory_enabled: bool = False

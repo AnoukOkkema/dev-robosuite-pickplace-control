@@ -9,4 +9,5 @@ __pycache__/
 logs/web.log
 outputs/web/
 outputs/trajectory/
+outputs/videos/
 .claude/settings.local.json

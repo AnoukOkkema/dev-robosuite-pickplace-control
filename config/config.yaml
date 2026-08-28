@@ -41,7 +41,7 @@ VISUALIZATION:
   # the README or a motion review.
   VIDEO_ENABLED: false
   # Base output path for the generated MP4s.
-  VIDEO_PATH: "outputs/pickplace.mp4"
+  VIDEO_PATH: "outputs/videos/pickplace.mp4"
   # Output video playback frame rate.
   VIDEO_FPS: 30
   # Controller ticks between recorded frames. Render one Full-HD frame every
@@ -49,7 +49,7 @@ VISUALIZATION:
   VIDEO_CAPTURE_EVERY_TICKS: 6
   # Export a compact qpos trajectory and a reusable MJCF scene, consumed by
   # the web API (see README).
-  TRAJECTORY_ENABLED: false
+  TRAJECTORY_ENABLED: true
   # Output binary path for the recorded trajectory.
   TRAJECTORY_PATH: "outputs/trajectory/trajectory.bin"
   # Output ZIP path for the packaged MJCF scene model.

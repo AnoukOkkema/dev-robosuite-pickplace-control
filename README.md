@@ -152,9 +152,12 @@ run. `main()` opens the viewer only when `VIDEO_ENABLED` is `false`
 ([`main.py`](main.py)). Set it to `true` instead for a headless run that
 records an MP4. The command you run stays the same either way.
 `TRAJECTORY_ENABLED` doesn't affect this at all, so it's fine to leave it
-on while watching the viewer. Combining the viewer with video recording
-does work (confirmed on Windows), but it roughly doubles the time per
-stage, so it isn't the default.
+on while watching the viewer: a measured full run (4 objects) took about
+the same ~90 seconds with the viewer alone as with the viewer and
+trajectory recording together. Combining the viewer with video recording
+also works, but is pointless: the same run took about 7.5 minutes with
+video capture on, since it renders and overlays two extra Full-HD frames
+every few ticks. That's why it isn't the default.
 
 macOS needs MuJoCo's interactive viewer to run on the main thread.
 `mjpython` (bundled with the `mujoco` package) provides that. Headless
@@ -174,10 +177,10 @@ into a raw `dict`. `ConfigAssembler.assemble()` then builds a typed
 `SystemConfigurator.load()` is the only entrypoint used.
 
 Most keys are required: a missing one raises `KeyError`. Only a handful are
-optional with a fallback: `VISUALIZATION.*`, `MOTION.JOINT5_NAME`,
-`MOTION.JOINT6_HOME_DEG`, and `STAGES.FINE_DESCEND_MAX_POSITION_DELTAS`. So
-the values below (not the dataclass defaults in `types.py`) are what
-actually runs.
+optional with a fallback: `VISUALIZATION.*`, `POSE.ROTATION_SYMMETRIC_CLASSES`,
+`MOTION.JOINT5_NAME`, `MOTION.JOINT6_HOME_DEG`, and
+`STAGES.FINE_DESCEND_MAX_POSITION_DELTAS`. So the values below (not the
+dataclass defaults in `types.py`) are what actually runs.
 
 ### `DETECTOR`
 
@@ -216,7 +219,7 @@ actually runs.
 | Key | Description | Default |
 |---|---|---|
 | `VIDEO_ENABLED` | Record agent-view/front-view MP4s. | `false` |
-| `VIDEO_PATH` | Base output path for the generated MP4s. | `outputs/pickplace.mp4` |
+| `VIDEO_PATH` | Base output path for the generated MP4s. | `outputs/videos/pickplace.mp4` |
 | `VIDEO_FPS` | Output video playback frame rate. | `30` |
 | `VIDEO_CAPTURE_EVERY_TICKS` | Controller ticks between recorded frames. | `6` |
 | `TRAJECTORY_ENABLED` | Export a compact `qpos` trajectory plus a reusable MJCF model, consumed by the [Web API](#web-api-srcweb). | `false` |
@@ -445,9 +448,12 @@ below. Each one ignores the hooks it has no use for.
 
 Set `VISUALIZATION.VIDEO_ENABLED` to `true`, then run the headless command
 above. Two Full-HD (1920x1080) MP4s are written by default:
-`outputs/pickplace_agentview.mp4` and `outputs/pickplace_frontview.mp4`.
-They're downsampled to one captured tick every `VIDEO_CAPTURE_EVERY_TICKS`
-(6 by default), to bound render time, using a fast H.264 preset.
+`outputs/videos/pickplace_agentview.mp4` and
+`outputs/videos/pickplace_frontview.mp4`. They're downsampled to one
+captured tick every `VIDEO_CAPTURE_EVERY_TICKS` (6 by default), to bound
+render time, using a fast H.264 preset. This roughly quadruples the
+wall-clock time of a run: a full 4-object run took about 90 seconds
+without video, versus about 7.5 minutes with it (measured on Windows).
 
 The detection overlay (box, label, red-X/green-Y/blue-Z pose axes) is only
 drawn during the pre-grasp approach stages (`RAISE` through
@@ -523,14 +529,10 @@ survives the API process restarting).
 passes it to `main()` along with `has_renderer=False`. It then writes
 `result.json` on success, or `error.json` on any exception.
 
-> **Known gap:** `main()` currently ignores the `config` object it's
-> passed, and always calls `SystemConfigurator.load()` instead, which
-> re-reads `config/config.yaml` from disk. Only `has_renderer=False` (a
-> separate keyword argument, which `main()` does honor) actually takes
-> effect for a web-triggered run. The per-request seed, target-classes, and
-> trajectory overrides that `worker.py` builds don't yet reach the
-> pipeline. So a web run currently behaves like any other run of whatever
-> `config.yaml` says.
+`main()` only falls back to `SystemConfigurator.load()` when `config` is
+`None` ([`main.py`](main.py)), so the request-specific config `worker.py`
+builds (seed, target classes, trajectory overrides) actually reaches the
+pipeline for a web-triggered run.
 
 `SimulationJobs.refresh()` works out a job's status purely from what's on
 disk, each time it's called:

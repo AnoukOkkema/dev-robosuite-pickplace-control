@@ -35,7 +35,8 @@ def main(
         Placed-object count plus this run's average detection confidence and
         average vision-vs-ground-truth position error.
     """
-    config = SystemConfigurator.load()
+    if config is None:
+        config = SystemConfigurator.load()
     logger = LoggingConfigurator.setup("main.log")
     logger.info("Pick-and-place pipeline started.")
 
@@ -56,12 +57,12 @@ def main(
 
     if has_renderer is None:
         # Without an explicit choice, open the viewer exactly when no MP4 is
-        # being recorded. Combining them is possible (confirmed on Windows),
-        # but pointless: video capture alone roughly doubles the time per
-        # stage, since it renders an extra Full-HD frame per camera on top
-        # of what the viewer already draws. Trajectory recording has no such
-        # cost (it only records qpos, no rendering), so it doesn't affect
-        # this default at all.
+        # being recorded. Combining them works, but is pointless: a measured
+        # full run took ~90s with the viewer alone, versus ~7.5 minutes with
+        # video capture on (headless), since it renders and overlays two
+        # extra Full-HD frames every VIDEO_CAPTURE_EVERY_TICKS. Trajectory
+        # recording has no such cost (it only records qpos, no rendering),
+        # so it doesn't affect this default at all.
         has_renderer = not visualization.video_enabled
 
     executor = PickPlaceExecutor(
