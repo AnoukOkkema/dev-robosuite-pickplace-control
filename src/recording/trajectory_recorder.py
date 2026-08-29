@@ -6,11 +6,11 @@ import struct
 import xml.etree.ElementTree as element_tree
 import zipfile
 from pathlib import Path
-from typing import Any, BinaryIO
+from typing import Any
 
 import numpy as np
 
-from src.control.stage import Stage
+from src.util.types import RunResult
 
 
 class TrajectoryRecorder:
@@ -25,11 +25,11 @@ class TrajectoryRecorder:
 
     * ``model.zip`` (:meth:`export_model`): the packaged 3D scene, which the
       player downloads once in order to render anything at all.
-    * ``live.bin`` (:meth:`start` + :meth:`capture`): a stream that grows
-      while the run is still going, so the player can show the robot moving
-      live.
     * ``trajectory.bin`` (:meth:`export`): the complete recording, written
       once the run is over, used for replays.
+    * ``<output-stem>.result.json`` (:meth:`write_result`): the run's
+      placement/vision-accuracy summary, alongside the trajectory it belongs
+      to.
     """
 
     def __init__(
@@ -49,47 +49,6 @@ class TrajectoryRecorder:
         self.model_path = Path(model_path)
         self.logger = logger or logging.getLogger(__name__)
         self._frames: list[dict[str, Any]] = []
-        self._live_path = self.output_path.with_name("live.bin")
-        self._live_meta_path = self.output_path.with_name("live.meta.json")
-        self._live_file: BinaryIO | None = None
-        self._live_object_codes: dict[str, int] = {}
-        self._live_stage_codes: dict[str, int] = {}
-
-    def start(self, nq: int, object_names: list[str]) -> None:
-        """Open the live-progress stream for one run.
-
-        Call this once, as soon as the compiled model's ``nq`` and the run's
-        object order are known, and before the first :meth:`capture` call.
-        That way a browser polling ``live.bin`` can render seconds into a
-        run instead of waiting for :meth:`export` at the very end. Object
-        and stage names must be fixed up front, because ``live.bin`` is
-        append-only. Unlike the final trajectory, there is no second pass
-        to collect them.
-
-        Args:
-            nq: Number of generalized-position values in every frame.
-            object_names: Object classes in this run's placement order.
-        """
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        stage_names = [stage.name for stage in Stage]
-        self._live_object_codes = {
-            name: index + 1 for index, name in enumerate(object_names)
-        }
-        self._live_stage_codes = {
-            name: index + 1 for index, name in enumerate(stage_names)
-        }
-        self._live_meta_path.write_text(
-            json.dumps(
-                {
-                    "format_version": 1,
-                    "nq": int(nq),
-                    "object_names": object_names,
-                    "stage_names": stage_names,
-                },
-                separators=(",", ":"),
-            )
-        )
-        self._live_file = self._live_path.open("wb")
 
     def capture(
         self,
@@ -115,34 +74,6 @@ class TrajectoryRecorder:
         if stage_name is not None:
             frame["stage_name"] = stage_name
         self._frames.append(frame)
-        if self._live_file is not None:
-            self._append_live_frame(frame)
-
-    def _append_live_frame(self, frame: dict[str, Any]) -> None:
-        """Write one fixed-stride record to the live stream and flush it.
-
-        The record layout is ``time:f32, qpos:f32[nq], object:u8, stage:u8,
-        pad:u8[2]``. It stays 4-byte aligned throughout, so a reader can
-        decode any whole number of trailing records straight into
-        ``Float32Array``s.
-        """
-        qpos_bytes = np.asarray(frame["qpos"], dtype=np.float32).tobytes()
-        object_code = self._live_object_codes.get(frame.get("object_name"), 0)
-        stage_code = self._live_stage_codes.get(frame.get("stage_name"), 0)
-        self._live_file.write(
-            struct.pack("<f", frame["time"])
-            + qpos_bytes
-            + struct.pack("<BBxx", object_code, stage_code)
-        )
-        # Push to the OS page cache immediately so concurrent readers (the
-        # web API) observe growth without waiting for this process to exit.
-        self._live_file.flush()
-
-    def finish_live(self) -> None:
-        """Close the live stream. Safe to call even if :meth:`start` was not."""
-        if self._live_file is not None:
-            self._live_file.close()
-            self._live_file = None
 
     def export_model(self, model) -> None:
         """Package the reusable MJCF ZIP as soon as the model is known.
@@ -175,7 +106,6 @@ class TrajectoryRecorder:
         Args:
             model: Robosuite model wrapper used during the recorded run.
         """
-        self.finish_live()
         if not self._frames:
             self.logger.warning("TRAJECTORY | No states captured; export skipped.")
             return
@@ -191,12 +121,41 @@ class TrajectoryRecorder:
             self.model_path,
         )
 
+    def write_result(self, result: RunResult) -> None:
+        """Write ``<output-stem>.result.json`` next to the trajectory output.
+
+        Lets one run produce everything the demo player needs
+        (trajectory, model, and this result summary) in one place.
+
+        Args:
+            result: The run's placement/vision-accuracy summary.
+        """
+        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        result_path = self.output_path.with_name(f"{self.output_path.stem}.result.json")
+        result_path.write_text(
+            json.dumps(
+                {
+                    "placed_objects": result.placed,
+                    "avg_detection_confidence": result.avg_detection_confidence,
+                    "avg_pose_position_error_cm": result.avg_pose_position_error_cm,
+                    "avg_pose_rotation_error_deg": result.avg_pose_rotation_error_deg,
+                    "detection_confidences": result.detection_confidences,
+                    "pose_position_errors_cm": result.pose_position_errors_cm,
+                    "pose_rotation_errors_deg": result.pose_rotation_errors_deg,
+                }
+            )
+        )
+        self.logger.info("TRAJECTORY | Wrote run summary | path=%s", result_path)
+
     def _write_binary_trajectory(self, nq: int) -> None:
         """Write qpos, time, and stage metadata in a browser-friendly binary format.
 
         JSON stores every floating-point value as text and repeats object and
         stage names for every frame. The binary layout keeps those names once
         in a small header and stores numeric state arrays directly afterwards.
+        Object and stage codes are stored as 1-based indices into their name
+        list, leaving 0 free as a sentinel for "no object" / "no stage" so
+        frames without either don't need a name at all.
 
         Args:
             nq: Number of generalized-position values in every recorded frame.
@@ -240,7 +199,12 @@ class TrajectoryRecorder:
             trajectory_file.write(stage_frames.tobytes())
 
     def _unique_frame_values(self, key: str) -> list[str]:
-        """Return encountered non-empty values for one frame key in order."""
+        """Return encountered non-empty values for one frame key in order.
+
+        Args:
+            key: Frame dictionary key to collect values for, e.g.
+                ``"object_name"`` or ``"stage_name"``.
+        """
         return list(
             dict.fromkeys(
                 frame[key]

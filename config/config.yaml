@@ -39,7 +39,7 @@ EXECUTION:
 VISUALIZATION:
   # Record agent-view/front-view MP4s. Enable only when creating an MP4 for
   # the README or a motion review.
-  VIDEO_ENABLED: false
+  VIDEO_ENABLED: true
   # Base output path for the generated MP4s.
   VIDEO_PATH: "outputs/videos/pickplace.mp4"
   # Output video playback frame rate.
@@ -47,13 +47,12 @@ VISUALIZATION:
   # Controller ticks between recorded frames. Render one Full-HD frame every
   # six controller steps to limit render time.
   VIDEO_CAPTURE_EVERY_TICKS: 6
-  # Export a compact qpos trajectory and a reusable MJCF scene, consumed by
-  # the web API (see README).
-  TRAJECTORY_ENABLED: true
+  # Every run exports a compact qpos trajectory and a reusable MJCF scene,
+  # consumed by the hosted docs/ demo player (see README).
   # Output binary path for the recorded trajectory.
-  TRAJECTORY_PATH: "outputs/trajectory/trajectory.bin"
+  TRAJECTORY_PATH: "docs/assets/sample-trajectory.bin"
   # Output ZIP path for the packaged MJCF scene model.
-  TRAJECTORY_MODEL_PATH: "outputs/trajectory/model.zip"
+  TRAJECTORY_MODEL_PATH: "docs/assets/scene-model.zip"
   # Save an annotated PNG per detection scan, plus one raw opening capture.
   SCAN_IMAGES_ENABLED: true
   # Directory the scan PNGs are written into.

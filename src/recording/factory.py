@@ -8,16 +8,20 @@ from src.util.types import VisualizationConfig
 def build_observers(
     visualization: VisualizationConfig, logger=None
 ) -> list[BaseRunObserver]:
-    """Construct the observers ``visualization`` enables, in no particular order."""
-    observers: list[BaseRunObserver] = []
-    if visualization.trajectory_enabled:
-        observers.append(
-            TrajectoryObserver(
-                visualization.trajectory_path,
-                visualization.trajectory_model_path,
-                logger=logger,
-            )
+    """Construct the observers ``visualization`` enables, in no particular order.
+
+    Args:
+        visualization: Config selecting which observers to build and their
+            output paths and settings.
+        logger: Logger passed to every constructed observer.
+    """
+    observers: list[BaseRunObserver] = [
+        TrajectoryObserver(
+            visualization.trajectory_path,
+            visualization.trajectory_model_path,
+            logger=logger,
         )
+    ]
     if visualization.video_enabled:
         observers.append(
             VideoObserver(

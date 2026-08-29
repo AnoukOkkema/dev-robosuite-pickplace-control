@@ -12,15 +12,10 @@ class VideoRecorder:
     """Write one Full-HD MP4 recording per camera during a robot run.
 
     The agent view records object detections and pose axes, while the front
-    view records the full Panda motion. Each controller step is recorded so
-    the output does not skip robot motion.
-
-    Attributes:
-        agentview_path: Output path of the annotated agent-view MP4.
-        frontview_path: Output path of the annotated front-view MP4.
-        fps: Playback frames per second.
-        capture_every_ticks: Controller steps between recorded frames.
-        logger: Logger used to report completed recordings.
+    view records the full Panda motion. Every call to :meth:`capture` writes
+    one frame to both files at once, so the agent-view and front-view MP4s
+    always have the same frame count and never drift out of sync with each
+    other.
     """
 
     def __init__(
@@ -76,7 +71,13 @@ class VideoRecorder:
         }
 
     def should_capture_motion_frame(self) -> bool:
-        """Return whether the current controller step should be rendered."""
+        """Return whether the current controller step should be rendered.
+
+        The controller ticks far more often than a demo video needs frames,
+        so recording every tick would make the export excessively long.
+        Sampling every ``capture_every_ticks``-th tick instead keeps the
+        video watchable while still covering the run's motion evenly.
+        """
         self._controller_tick_count += 1
         return self._controller_tick_count % self.capture_every_ticks == 0
 
@@ -93,6 +94,11 @@ class VideoRecorder:
         stage_name: str,
     ) -> None:
         """Append matching, labelled frames to the two MP4 recordings.
+
+        ``stage_name`` accepts either a plain string or a ``Stage`` enum
+        because the two observers that call this hand it over differently:
+        one passes ``stage.name``, the other passes the raw enum. The label
+        lookup below normalizes whichever form arrives.
 
         Args:
             agentview_bgr: Full BGR agent-view image, optionally annotated.
@@ -167,7 +173,22 @@ class VideoRecorder:
         view_name: str,
         status: str,
     ) -> np.ndarray:
-        """Create a 1920x1080 frame with a readable two-line text overlay."""
+        """Create a 1920x1080 frame with a readable two-line text overlay.
+
+        Camera frames don't natively match the fixed output canvas's aspect
+        ratio. Stretching them would distort the scene, and plain padding
+        would leave dead black bars, so the frame is instead centered at its
+        native aspect ratio over a heavily blurred, stretched copy of
+        itself, so the empty space still reads as part of the scene. Each
+        caption is drawn twice, an offset light shadow then the color text
+        on top, so it stays legible over both light and dark backgrounds.
+
+        Args:
+            image_bgr: Source BGR camera frame to letterbox onto the fixed
+                1920x1080 canvas.
+            view_name: Camera label drawn as the frame's first caption line.
+            status: Object-and-stage caption drawn as the frame's second line.
+        """
         height, width = image_bgr.shape[:2]
         background = cv2.resize(
             image_bgr, (self.frame_size.width, self.frame_size.height)

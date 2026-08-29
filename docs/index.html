@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RoboSuite Pick &amp; Place — Recorded demo</title>
+    <script>
+      if (!location.search.includes("preset=")) {
+        const params = new URLSearchParams({
+          embed: "1",
+          static: "1",
+          preset: "assets/sample-trajectory.bin",
+          presetResult: "assets/sample-trajectory.result.json",
+          model: "assets/scene-model.zip",
+        });
+        history.replaceState(null, "", "?" + params);
+      }
+    </script>
+    <script type="module" crossorigin src="./assets/script.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/style.css" />
+  </head>
+  <body>
+    <main id="app">
+      <header>
+        <p class="eyebrow">MuJoCo trajectory review</p>
+        <h1>Pick-and-place player</h1>
+        <p id="status">Start a simulation to begin.</p>
+      </header>
+      <section class="controls" aria-label="Live simulation controls">
+        <p class="group-label">Live simulation</p>
+        <label
+          >Seed <input id="seed" type="number" placeholder="Random"
+        /></label>
+        <button id="run-button" type="button">Run new simulation</button>
+        <button id="pause-button" type="button" disabled>
+          Pause simulation
+        </button>
+        <button id="stop-button" type="button" disabled>Stop simulation</button>
+      </section>
+      <section class="controls" aria-label="Playback review controls">
+        <p class="group-label">Playback review</p>
+        <button id="play-button" type="button" disabled>Replay</button>
+        <label
+          >Camera
+          <select id="camera-view" disabled>
+            <option value="mujoco-free" selected>MuJoCo viewer</option>
+            <option value="agentview">Agent view</option>
+            <option value="frontview">Front view</option>
+          </select>
+        </label>
+        <button id="reset-view-button" type="button" disabled>
+          Reset camera
+        </button>
+        <label
+          >Speed
+          <select id="speed" disabled>
+            <option value="1.5">0.25×</option>
+            <option value="3">0.5×</option>
+            <option value="6" selected>1× (real time)</option>
+            <option value="12">2×</option>
+            <option value="24">4×</option>
+            <option value="48">8×</option>
+            <option value="96">16×</option>
+          </select>
+        </label>
+      </section>
+      <section class="timeline" aria-label="Trajectory timeline">
+        <input id="timeline" type="range" min="0" max="0" value="0" disabled />
+        <output id="time-label">0.00 s / 0.00 s</output>
+      </section>
+      <section id="viewer" aria-label="Interactive 3D model viewer">
+        <p id="viewer-loading">Scene is loading…</p>
+        <div id="embed-camera-switch" role="group" aria-label="Camera view">
+          <button type="button" data-view="mujoco-free" class="active">
+            Free orbit
+          </button>
+          <button type="button" data-view="agentview">Agent view</button>
+          <button type="button" data-view="frontview">Front view</button>
+        </div>
+        <div id="embed-transport" aria-label="Playback controls">
+          <button
+            id="embed-transport-play"
+            type="button"
+            aria-label="Play"
+            disabled
+          ></button>
+          <button
+            id="embed-transport-stop"
+            type="button"
+            aria-label="Stop"
+            disabled
+          ></button>
+          <span id="embed-transport-current">00:00.0</span>
+          <input
+            id="embed-transport-scrubber"
+            type="range"
+            min="0"
+            max="0"
+            value="0"
+            step="0.01"
+            disabled
+          />
+          <span id="embed-transport-total">00:00.0</span>
+          <button id="embed-transport-speed" type="button" disabled>
+            1.0×
+          </button>
+        </div>
+      </section>
+      <p class="hint">
+        Left-drag rotates · right-drag pans · scroll zooms · timeline scrubs.
+      </p>
+    </main>
+  </body>
+</html>

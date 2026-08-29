@@ -1,8 +1,7 @@
 from src.util.logging_configurator import LoggingConfigurator
 
-# Must run before robosuite is imported (below, transitively via
-# PoseDatasetGenerator/PoseVisualizer). Robosuite emits its startup
-# warnings at import time.
+# This must run before robosuite is imported. Robosuite gets in PickPlaceExecutor,
+# and it prints its startup warnings as soon as it is imported.
 LoggingConfigurator.suppress_robosuite_warnings()
 
 from pathlib import Path
@@ -17,14 +16,14 @@ from src.vision.pose_estimator import PoseEstimator
 
 
 def main(
-    config: Optional[Config] = None,
+    config: Config,
     has_renderer: Optional[bool] = None,
     pause_flag_path: Optional[Path] = None,
 ) -> RunResult:
     """Run one pick-and-place batch and return its outcome summary.
 
     Args:
-        config: Fully resolved settings, or ``None`` to load config.yaml.
+        config: Fully resolved settings.
         has_renderer: Whether to open an interactive MuJoCo viewer. ``None``
             opens one exactly when no MP4 is being recorded.
         pause_flag_path: Path of a flag file that pauses the run. After every
@@ -35,8 +34,6 @@ def main(
         Placed-object count plus this run's average detection confidence and
         average vision-vs-ground-truth position error.
     """
-    if config is None:
-        config = SystemConfigurator.load()
     logger = LoggingConfigurator.setup("main.log")
     logger.info("Pick-and-place pipeline started.")
 
@@ -56,13 +53,6 @@ def main(
     observers = build_observers(visualization, logger=logger)
 
     if has_renderer is None:
-        # Without an explicit choice, open the viewer exactly when no MP4 is
-        # being recorded. Combining them works, but is pointless: a measured
-        # full run took ~90s with the viewer alone, versus ~7.5 minutes with
-        # video capture on (headless), since it renders and overlays two
-        # extra Full-HD frames every VIDEO_CAPTURE_EVERY_TICKS. Trajectory
-        # recording has no such cost (it only records qpos, no rendering),
-        # so it doesn't affect this default at all.
         has_renderer = not visualization.video_enabled
 
     executor = PickPlaceExecutor(
@@ -90,4 +80,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    main(config=SystemConfigurator.load())

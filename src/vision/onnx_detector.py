@@ -11,16 +11,15 @@ from src.util.types import Detection
 class OnnxDetector:
     """Detect Bread, Can, Cereal, and Milk in one cropped agent-view image.
 
-    Images are letterboxed to the square input expected by the trained YOLO
-    model. Post-processing removes that padding so the returned boxes line up
-    with the image passed to the pose-estimation model.
-
-    Attributes:
-        class_names: Names indexed by the model's class output.
-        image_size: Square ONNX input dimension in pixels.
-        session: Configured ONNX Runtime inference session.
-        input_name: Name of the model's image input tensor.
-        logger: Logger used for initialization details.
+    Images are letterboxed: resized to fit inside a square canvas with
+    aspect ratio preserved, then black-padded, rather than squashed to a
+    square. This exactly mirrors the "Fit (black edges)" preprocessing
+    Roboflow applied when building the training dataset in the vision repo;
+    squashing here would show the model a geometry it never trained on.
+    Post-processing then maps predicted boxes back out of letterboxed
+    coordinates into the original image, so they line up with the image
+    passed to the pose-estimation model rather than the padded square only
+    the detector saw.
     """
 
     LETTERBOX_PAD_COLOR = (0, 0, 0)
@@ -73,7 +72,11 @@ class OnnxDetector:
         )
 
     def _letterbox(self, image: np.ndarray):
-        """Resize ``image`` into the square model input with black padding."""
+        """Resize ``image`` into the square model input with black padding.
+
+        Args:
+            image: Source image to letterbox into the square model input.
+        """
         height, width = image.shape[:2]
 
         scale = min(self.image_size / height, self.image_size / width)
@@ -102,7 +105,12 @@ class OnnxDetector:
         return canvas, scale, pad_left, pad_top
 
     def _to_blob(self, letterboxed_bgr: np.ndarray) -> np.ndarray:
-        """Convert a BGR image into a normalized NCHW inference tensor."""
+        """Convert a BGR image into a normalized NCHW inference tensor.
+
+        Args:
+            letterboxed_bgr: Square, letterboxed BGR image produced by
+                ``_letterbox``, to convert into the model's input tensor.
+        """
         rgb = cv2.cvtColor(letterboxed_bgr, cv2.COLOR_BGR2RGB)
         normalized = rgb.astype(np.float32) / 255.0
         chw = np.transpose(normalized, (2, 0, 1))
@@ -118,7 +126,24 @@ class OnnxDetector:
         conf_threshold,
         iou_threshold,
     ) -> List[Detection]:
-        """Convert raw YOLO predictions to original-image detections."""
+        """Convert raw YOLO predictions to original-image detections.
+
+        Args:
+            output: Raw model output for one image, with anchors as columns
+                and (4 box coords + per-class scores) as rows.
+            scale: Letterbox scale factor to divide out when mapping boxes
+                back to the original image.
+            pad_left: Horizontal letterbox padding to subtract when mapping
+                boxes back to the original image.
+            pad_top: Vertical letterbox padding to subtract when mapping
+                boxes back to the original image.
+            original_size: (height, width) of the original, un-letterboxed
+                image, used to clip mapped boxes to valid bounds.
+            conf_threshold: Minimum class confidence a box must have to be
+                kept before non-max suppression.
+            iou_threshold: IoU threshold passed to non-max suppression for
+                discarding overlapping boxes.
+        """
         # YOLO exports anchors as columns. OpenCV expects rows for NMS.
         predictions = output.T  # (num_anchors, 4 + nc)
 

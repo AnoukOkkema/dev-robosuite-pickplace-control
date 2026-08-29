@@ -1,13 +1,6 @@
 /data/
-src/web/player/node_modules/
-src/web/player/dist/
 __pycache__/
 *.pyc
 .venv/
 .env
 .DS_Store
-logs/web.log
-outputs/web/
-outputs/trajectory/
-outputs/videos/
-.claude/settings.local.json

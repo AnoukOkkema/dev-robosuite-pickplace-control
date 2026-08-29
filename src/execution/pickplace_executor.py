@@ -35,13 +35,11 @@ class PickPlaceExecutor:
     selects only the next required class. Scanning again after a release lets
     objects that were hidden behind another object become available.
 
-    Attributes:
-        config: Typed application configuration.
-        detector: ONNX detector for agent-view images.
-        pose_estimator: ONNX pose estimator for detected objects.
-        env: Initialized Robosuite PickPlace environment.
-        controller: Controller that executes one object placement.
-        target_classes: Required object order for the current episode.
+    Camera frames come from a direct MuJoCo render rather than Robosuite's own
+    camera pipeline (see ``_init_env`` and ``_render_camera_frame``): Robosuite's
+    offscreen path re-renders a full agentview frame on every ``env.step()``,
+    but this executor only needs one frame per detection scan, and offscreen
+    rendering also conflicts with the interactive viewer on macOS.
     """
 
     def __init__(
@@ -85,9 +83,9 @@ class PickPlaceExecutor:
         self._pause_flag_path = pause_flag_path
         self._observers = list(observers)
 
-        # Renders frames directly through MuJoCo instead of using Robosuite's
-        # camera pipeline. Creates one renderer per camera, lazily, and hides
-        # collision geometry to match what the interactive viewer shows.
+        # One mujoco.Renderer per camera, created lazily on first use.
+        # geomgroup[0] = 0 hides collision geometry, matching what the
+        # interactive viewer shows.
         self._renderers: dict[str, mujoco.Renderer] = {}
         self._scene_option = mujoco.MjvOption()
         self._scene_option.geomgroup[0] = 0
@@ -99,9 +97,8 @@ class PickPlaceExecutor:
         self._pose_position_errors_m: list[float] = []
         self._pose_rotation_errors_deg: list[float | None] = []
 
-        # Accounts for 180-degree local symmetry. Without this, objects that
-        # look identical when rotated 180 degrees about their own up-axis
-        # would be penalized for rotations that are visually correct.
+        # 180-degree local symmetry about the object's own up-axis; see
+        # _rotation_error_deg for why this is needed.
         self.symmetry_local_rotations = (
             np.eye(3),
             np.diag([-1.0, -1.0, 1.0]),
@@ -132,6 +129,15 @@ class PickPlaceExecutor:
     def _init_env(self, has_renderer: bool) -> MujocoEnv:
         """Create the Panda PickPlace simulation used by this application.
 
+        ``has_offscreen_renderer`` and ``use_camera_obs`` are left off (see the
+        class docstring for why frames are instead pulled via a direct MuJoCo
+        render). ``horizon`` is set far above any single pick because one
+        episode here must run every configured placement back to back, not
+        just one.
+
+        Args:
+            has_renderer: Whether to open the interactive MuJoCo viewer.
+
         Returns:
             Robosuite environment with a Panda, Robotiq85 gripper, and agent view.
         """
@@ -139,12 +145,6 @@ class PickPlaceExecutor:
             controller=str(Path("config", "joint_position_controller.json"))
         )
 
-        # Robosuite's own camera pipeline (has_offscreen_renderer /
-        # use_camera_obs) stays off. With use_camera_obs=True, it renders a
-        # full agentview frame on every single env.step(), but this executor
-        # only needs one frame per detection scan (see _render_camera_frame).
-        # Off-screen rendering also conflicts with the interactive viewer on
-        # macOS.
         env = suite.make(
             PickPlaceWithRobotOffset.__name__,
             robots="Panda",
@@ -161,14 +161,18 @@ class PickPlaceExecutor:
             hard_reset=False,
             seed=self.config.environment.seed,
             robot_base_offset=self.config.environment.robot_base_offset,
-            # One episode contains all configured placements.
             horizon=20000,
         )
         self._boost_gripper_clamp_force(env)
         return env
 
     def _boost_gripper_clamp_force(self, env) -> None:
-        """Apply the configured multiplier to both Robotiq85 finger actuators."""
+        """Apply the configured multiplier to both Robotiq85 finger actuators.
+
+        Args:
+            env: Robosuite environment whose gripper finger actuators are
+                scaled in place.
+        """
         multiplier = self.config.motion.gripper_clamp_force_multiplier
         model = env.sim.model._model
         for name in ("gripper0_right_finger_1", "gripper0_right_finger_2"):
@@ -177,7 +181,11 @@ class PickPlaceExecutor:
             model.actuator_biasprm[actuator_id][1] *= multiplier
 
     def _resolve_camera_extrinsics(self, camera_name: str):
-        """Return the world-frame position and orientation of ``camera_name``."""
+        """Return the world-frame position and orientation of ``camera_name``.
+
+        Args:
+            camera_name: Name of the MuJoCo camera to resolve.
+        """
         cam_id = self.env.sim.model.camera_name2id(camera_name)
         cam_xpos = self.env.sim.data.cam_xpos[cam_id].copy()
         cam_xmat = self.env.sim.data.cam_xmat[cam_id].copy().reshape(3, 3)
@@ -188,7 +196,14 @@ class PickPlaceExecutor:
     # ------------------------------------------------------------------
 
     def _on_controller_step(self, object_name: str, stage: Stage) -> None:
-        """Runs after every controller step: pause first, then notify observers."""
+        """Runs after every controller step: pause first, then notify observers.
+
+        Args:
+            object_name: Class name of the object the controller is currently
+                acting on.
+            stage: Stage of the pick-and-place motion the controller is
+                currently executing.
+        """
         self._wait_while_paused()
         for observer in self._observers:
             observer.on_step(object_name, stage)
@@ -205,7 +220,11 @@ class PickPlaceExecutor:
     # ------------------------------------------------------------------
 
     def _render_camera_frame(self, camera_name: str) -> np.ndarray:
-        """Render a camera directly through MuJoCo."""
+        """Render a camera directly through MuJoCo.
+
+        Args:
+            camera_name: Name of the MuJoCo camera to render.
+        """
         if camera_name not in self._renderers:
             # Direct rendering does not inherit Robosuite's camera buffer size.
             model = self.env.sim.model._model
@@ -234,7 +253,12 @@ class PickPlaceExecutor:
 
     @staticmethod
     def _keep_best_per_class(detections: list[Detection]) -> list[Detection]:
-        """Keeps only the highest-confidence detection per class."""
+        """Keeps only the highest-confidence detection per class.
+
+        Args:
+            detections: Raw detections from one detector call, possibly with
+                multiple detections for the same class.
+        """
 
         best_by_class: dict[int, Detection] = {}
         for detection in detections:
@@ -337,7 +361,12 @@ class PickPlaceExecutor:
         return targets
 
     def _pick_order_key(self, target: PlacementTarget) -> int:
-        """Return the configured placement-order index for ``target``."""
+        """Return the configured placement-order index for ``target``.
+
+        Args:
+            target: Detected placement target whose class determines its
+                position in ``target_classes``.
+        """
         try:
             return self.target_classes.index(target.class_name)
         except ValueError:
@@ -351,6 +380,12 @@ class PickPlaceExecutor:
         self, class_name: str, world_xpos: np.ndarray, world_xmat: np.ndarray
     ) -> tuple[float, float | None]:
         """Compare a predicted world pose against the simulator's true pose.
+
+        Args:
+            class_name: Object class whose predicted pose is being checked;
+                used to look up the simulator's ground-truth body pose.
+            world_xpos: Predicted world-frame position of the object.
+            world_xmat: Predicted world-frame rotation matrix of the object.
 
         Returns:
             Position error in metres, and rotation error in degrees. The
@@ -373,7 +408,16 @@ class PickPlaceExecutor:
     ) -> float:
         """Symmetry-aware geodesic angle between two rotations, in degrees.
 
-        The same metric the vision repo reports for the pose estimator.
+        Takes the minimum angle over ``self.symmetry_local_rotations`` so a
+        180-degree rotation about an object's own up-axis, which looks
+        identical for these objects, isn't counted as an error just because
+        it doesn't match the simulator's arbitrarily-chosen orientation. The
+        same metric the vision repo reports for the pose estimator.
+
+        Args:
+            rot_pred_world: Predicted world-frame rotation matrix.
+            rot_target_world: Simulator's ground-truth world-frame rotation
+                matrix.
         """
         angles = []
         for symmetry in self.symmetry_local_rotations:
@@ -382,11 +426,23 @@ class PickPlaceExecutor:
             angles.append(float(np.degrees(np.arccos(cos_angle))))
         return min(angles)
 
-    def _build_run_result(self, placed: int) -> RunResult:
-        """Aggregate the per-object stats collected during the run."""
+    @staticmethod
+    def _average(values: list[float]) -> float | None:
+        """Return the mean of ``values``, or ``None`` if it's empty.
 
-        def average(values: list[float]) -> float | None:
-            return sum(values) / len(values) if values else None
+        Args:
+            values: Numbers to average, e.g. per-object error or confidence
+                measurements collected over a run.
+        """
+        return sum(values) / len(values) if values else None
+
+    def _build_run_result(self, placed: int) -> RunResult:
+        """Aggregate the per-object stats collected during the run.
+
+        Args:
+            placed: Number of objects successfully placed before the run
+                stopped or completed.
+        """
 
         position_errors_cm = [error * 100 for error in self._pose_position_errors_m]
         # Rotation-symmetric classes (e.g. Can) contribute None here, since
@@ -397,9 +453,9 @@ class PickPlaceExecutor:
         ]
         return RunResult(
             placed=placed,
-            avg_detection_confidence=average(self._detection_confidences),
-            avg_pose_position_error_cm=average(position_errors_cm),
-            avg_pose_rotation_error_deg=average(scored_rotation_errors),
+            avg_detection_confidence=self._average(self._detection_confidences),
+            avg_pose_position_error_cm=self._average(position_errors_cm),
+            avg_pose_rotation_error_deg=self._average(scored_rotation_errors),
             detection_confidences=list(self._detection_confidences),
             pose_position_errors_cm=position_errors_cm,
             pose_rotation_errors_deg=list(self._pose_rotation_errors_deg),
@@ -430,6 +486,7 @@ class PickPlaceExecutor:
 
         placed_classes: list[str] = []
         start_simulation_time = float(self.env.sim.data.time)
+        result: RunResult
 
         try:
             for index, class_name in enumerate(self.target_classes):
@@ -469,9 +526,9 @@ class PickPlaceExecutor:
                     break
                 placed_classes.append(class_name)
         finally:
-            # Also after a crash, so recorders can still write what they have.
+            result = self._build_run_result(placed=len(placed_classes))
             for observer in self._observers:
-                observer.on_run_end()
+                observer.on_run_end(result)
 
         simulation_duration = float(self.env.sim.data.time) - start_simulation_time
         self.logger.info(
@@ -481,7 +538,7 @@ class PickPlaceExecutor:
             ", ".join(placed_classes) or "none",
             simulation_duration,
         )
-        return self._build_run_result(placed=len(placed_classes))
+        return result
 
     def close(self) -> None:
         """Close direct renderers and the Robosuite environment."""

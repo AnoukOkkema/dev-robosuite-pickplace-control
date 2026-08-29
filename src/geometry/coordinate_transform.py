@@ -22,11 +22,18 @@ class CoordinateTransformer:
     ) -> Tuple[np.ndarray, np.ndarray, float]:
         """Convert a camera-frame object pose into its world-frame pose.
 
+        The pose estimator labels an object's grasp-alignment direction as
+        its green (Y) axis, but the yaw math below treats the grasp axis as
+        X. Before extracting yaw, this remaps ``world_xmat``'s columns to
+        (Y, -X, Z) so the resulting angle lines up with the controller's
+        grasp-alignment convention instead of the estimator's raw object
+        frame.
+
         Args:
-            xyz_cam (np.ndarray): Camera-frame position (3,).
-            rot_cam (np.ndarray): Camera-frame rotation matrix (3, 3).
-            cam_xpos (np.ndarray): Camera position, world-frame (3,).
-            cam_xmat (np.ndarray): Camera rotation matrix, world-frame (3, 3).
+            xyz_cam: Camera-frame position (3,).
+            rot_cam: Camera-frame rotation matrix (3, 3).
+            cam_xpos: Camera position, world-frame (3,).
+            cam_xmat: Camera rotation matrix, world-frame (3, 3).
 
         Returns:
             Tuple[np.ndarray, np.ndarray, float]:
@@ -35,7 +42,7 @@ class CoordinateTransformer:
 
         world_xpos = cam_xmat @ xyz_cam + cam_xpos
         world_xmat = cam_xmat @ rot_cam
-        # The learned object green axis is the grasp-alignment convention.
+        # Remap to the grasp-axis convention: green (Y) axis becomes X.
         green_axis_matrix = np.column_stack(
             (
                 world_xmat[:, 1],
@@ -54,7 +61,7 @@ class CoordinateTransformer:
         """Extract symmetry-wrapped world yaw from an XYZW quaternion.
 
         Args:
-            quat_xyzw (np.ndarray): Quaternion (x, y, z, w).
+            quat_xyzw: Quaternion (x, y, z, w).
 
         Returns:
             float: Yaw, degrees.
@@ -68,7 +75,7 @@ class CoordinateTransformer:
         """Extract symmetry-wrapped world yaw from a rotation matrix.
 
         Args:
-            rotation_matrix (np.ndarray): (3, 3) world-frame rotation matrix.
+            rotation_matrix: (3, 3) world-frame rotation matrix.
 
         Returns:
             float: Yaw, degrees.
@@ -82,7 +89,7 @@ class CoordinateTransformer:
         """Extract unwrapped roll, pitch, and yaw from an XYZW quaternion.
 
         Args:
-            quat_xyzw (np.ndarray): Quaternion (x, y, z, w).
+            quat_xyzw: Quaternion (x, y, z, w).
 
         Returns:
             Tuple[float, float, float]: (roll, pitch, yaw), degrees.
@@ -93,8 +100,16 @@ class CoordinateTransformer:
 
     @staticmethod
     def _wrap_yaw(yaw: float) -> float:
-        """Wrap yaw into the 180-degree symmetry interval ``[-90, 90]``."""
-        # A 180-degree turn is an equivalent grasp for the supported objects.
+        """Wrap yaw into the 180-degree symmetry interval ``[-90, 90]``.
+
+        A 180-degree turn of a symmetric object is an equivalent grasp, so
+        folding yaw into a half-turn range keeps the controller from
+        commanding a needlessly long rotation to reach an orientation that
+        looks identical to one already within reach.
+
+        Args:
+            yaw: World yaw in degrees, before symmetry wrapping.
+        """
         if yaw > 90:
             yaw -= 180
         elif yaw < -90:

@@ -29,3 +29,13 @@ repos:
           # purpose, since robosuite prints its startup warnings as soon as
           # it's imported. That's what triggers E402 here.
           - --per-file-ignores=main.py:E402
+
+      - id: prettier
+        name: prettier
+        # pre-commit's own node-env bootstrap for the prettier mirror hook
+        # fails on this machine (npm >=11's tightened git-install policy
+        # rejects how pre-commit installs it). Using the already-working
+        # system npx sidesteps that entirely.
+        entry: npx --yes prettier@3.3.3 --write
+        language: system
+        files: ^docs/(index\.html|assets/.*\.(js|css))$

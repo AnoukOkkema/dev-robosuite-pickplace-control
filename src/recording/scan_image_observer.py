@@ -6,6 +6,7 @@ import numpy as np
 
 from src.control.stage import Stage
 from src.recording.run_observer import BaseRunObserver
+from src.util.types import RunResult
 
 
 class ScanImageObserver(BaseRunObserver):
@@ -30,13 +31,25 @@ class ScanImageObserver(BaseRunObserver):
         self.axis_colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]  # X, Y, Z in BGR
 
     def on_run_start(self, executor) -> None:
-        """Resolve the executor and reset the per-run scan counter."""
+        """Resolve the executor and reset the per-run scan counter.
+
+        Args:
+            executor: The executor running the pick-and-place episode, used
+                to look up the crop region, image size, and camera intrinsics.
+        """
         self._executor = executor
         self._scan_index = 0
         os.makedirs(self._output_dir, exist_ok=True)
 
     def on_scan(self, agentview_frame: np.ndarray, poses_cam: list) -> None:
-        """Save the raw first scan once, then an annotated image per scan."""
+        """Save the raw first scan once, then an annotated image per scan.
+
+        Args:
+            agentview_frame: Full, uncropped BGR agent-view capture the scan
+                ran detection on; saved as-is for the first scan.
+            poses_cam: ``(class_name, box, xyz_cam, rot_cam)`` per detected
+                target-class object, drawn onto the annotated copy.
+        """
         self._scan_index += 1
         if self._scan_index == 1:
             cv2.imwrite(f"{self._output_dir}/raw_agentview.png", agentview_frame)
@@ -50,13 +63,30 @@ class ScanImageObserver(BaseRunObserver):
         self._logger.info("Scan %d | saved %s", self._scan_index, output_path)
 
     def on_target_detected(self, class_name: str, pose_cam: tuple) -> None:
-        """Unused. Scan images are built from ``on_scan`` instead."""
+        """Unused. Scan images are built from ``on_scan`` instead.
+
+        Args:
+            class_name: Detected object class.
+            pose_cam: ``(class_name, box, xyz_cam, rot_cam)`` detection box
+                in cropped agent-view pixels plus the camera-frame pose.
+        """
 
     def on_step(self, object_name: str, stage: Stage) -> None:
-        """Unused. This observer only reacts to scans."""
+        """Unused. This observer only reacts to scans.
 
-    def on_run_end(self) -> None:
-        """Unused. Nothing to close."""
+        Args:
+            object_name: Object the controller is currently handling.
+            stage: Current pick-and-place stage.
+        """
+
+    def on_run_end(self, result: RunResult) -> None:
+        """Unused. Nothing to close.
+
+        Args:
+            result: Placement/vision-accuracy summary for the finished run.
+                Unused; this observer has nothing to close.
+        """
+        del result
 
     def _annotate(
         self,
@@ -66,7 +96,16 @@ class ScanImageObserver(BaseRunObserver):
         xyz_cam: np.ndarray,
         rot_cam: np.ndarray,
     ) -> np.ndarray:
-        """Draw one detection's full-frame box, label, and pose axes."""
+        """Draw one detection's full-frame box, label, and pose axes.
+
+        Args:
+            frame: Agent-view frame to draw the annotation onto.
+            class_name: Detected object class, drawn as the box label.
+            box: Detection box in cropped agent-view pixels; offset by the
+                crop region before drawing.
+            xyz_cam: Camera-frame position of the detected object.
+            rot_cam: Camera-frame rotation matrix of the detected object.
+        """
         crop_region = self._executor.crop_region
         x1, y1, x2, y2 = (int(round(value)) for value in box)
         full_frame_box = (
@@ -96,7 +135,15 @@ class ScanImageObserver(BaseRunObserver):
         rot_cam: np.ndarray,
         axis_length: float = 0.05,
     ) -> np.ndarray:
-        """Draw a bounding box and red-X, green-Y, blue-Z pose axes."""
+        """Draw a bounding box and red-X, green-Y, blue-Z pose axes.
+
+        Args:
+            frame: Frame to draw the box and axes onto; not modified in place.
+            box: Full-frame bounding box to draw.
+            xyz_cam: Camera-frame position of the axes' origin.
+            rot_cam: Camera-frame rotation matrix defining the axes' directions.
+            axis_length: Length of each drawn axis, in metres.
+        """
         annotated = frame.copy()
         x1, y1, x2, y2 = box
         cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 255, 0), 1)
@@ -120,6 +167,9 @@ class ScanImageObserver(BaseRunObserver):
 
     def _project_point(self, xyz_cam: np.ndarray):
         """Project a camera-frame point into full-frame agent-view pixel coordinates.
+
+        Args:
+            xyz_cam: Point position in the agent-view camera's frame.
 
         Returns:
             Pixel coordinates, or ``None`` when the point is behind the camera.

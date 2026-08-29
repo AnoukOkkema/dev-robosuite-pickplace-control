@@ -15,8 +15,6 @@ dependencies = [
     "tqdm>=4.67.0",
     "imageio>=2.37.0",
     "imageio-ffmpeg>=0.6.0",
-    "fastapi>=0.141.1",
-    "uvicorn>=0.52.3",
 ]
 
 [project.optional-dependencies]

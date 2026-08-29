@@ -7,9 +7,6 @@ class PickPlaceWithRobotOffset(PickPlace):
 
     This small environment subclass leaves Robosuite's PickPlace task intact.
     It just makes the robot position configurable, for reachability experiments.
-
-    Attributes:
-        robot_base_offset: XYZ world-frame offset applied to the Panda base.
     """
 
     def __init__(self, *args, robot_base_offset=(0.0, 0.0, 0.0), **kwargs):

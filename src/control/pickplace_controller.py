@@ -21,16 +21,20 @@ class PickPlaceController:
 
     Stages execute in this order: raise above the table, align over the object,
     descend, orient the gripper when required, grasp, lift, re-zero yaw, move
-    over the bin, descend to its release height, and open the gripper. The
-    controller advances only after a stage's position, wrist, and yaw targets
-    have converged.
+    over the bin, descend to its release height, and open the gripper. A
+    stage only advances once its position, wrist, and yaw targets have all
+    converged. Checking wrist and yaw alongside position stops the state
+    machine from moving on while the gripper is still tilting or rotating,
+    which would otherwise carry a partially-corrected pose into the next
+    stage's motion.
 
-    Attributes:
-        env: Robosuite environment that receives joint-position actions.
-        motion_config: Controller gains and per-tick motion limits.
-        stages_config: Stage targets, tolerances, and dwell durations.
-        logger: Logger used for stage progress and diagnostics.
-        motion: Joint-motion helper used to build actions and wrist targets.
+    The cylindrical "Can" needs no yaw alignment (any grasp angle works), so
+    it skips ORIENT_YAW entirely, and REZERO_YAW leaves its yaw untouched
+    afterward rather than re-zeroing it like the other classes. There is
+    no "correct" orientation to restore for an object with no meaningful
+    rotation. The other classes re-zero to a fixed yaw so every non-symmetric
+    object lands in its bin at the same canonical orientation, independent
+    of whichever grasp yaw was picked for it at ORIENT_YAW.
     """
 
     def __init__(
@@ -71,7 +75,20 @@ class PickPlaceController:
 
     @staticmethod
     def _closest_symmetric_yaw(target_yaw: float, current_yaw: float) -> float:
-        """Return the equivalent target yaw requiring the smallest turn."""
+        """Return the equivalent target yaw requiring the smallest turn.
+
+        The grasp is symmetric under a 180-degree rotation (matching
+        ``CoordinateTransformer``'s yaw wrapping), so ``target_yaw``,
+        ``target_yaw - 180``, and ``target_yaw + 180`` are all equally valid
+        grasps. Picking whichever is closest to the current yaw avoids an
+        unnecessary near-180-degree wrist rotation when the opposite grasp
+        would have worked just as well.
+
+        Args:
+            target_yaw: Desired grasp yaw, in degrees, before accounting for
+                180-degree symmetry.
+            current_yaw: Current world yaw of the end effector, in degrees.
+        """
         return min(
             (target_yaw - 180.0, target_yaw, target_yaw + 180.0),
             key=lambda value: abs(value - current_yaw),
@@ -85,6 +102,13 @@ class PickPlaceController:
         reset_osc: bool = False,
     ) -> tuple[dict, bool]:
         """Execute the complete pick-and-place sequence for one detected object.
+
+        Convergence on position and orientation alone isn't proof the object
+        was actually picked up, so GRASP and LIFT each add a physical check
+        against simulator ground truth (gripper-object contact, then a
+        minimum rise in the object's own height) and return ``False``
+        immediately on failure rather than pressing on with an empty or
+        slipping gripper.
 
         Args:
             obs: Most recent environment observation.
@@ -162,7 +186,6 @@ class PickPlaceController:
                     keep_world_yaw=True,
                 )
                 wrist_targets = self.motion.vertical_down_wrist_targets()
-                # The cylindrical can is grasped without object-specific yaw alignment.
                 next_stage = (
                     Stage.FINE_DESCEND
                     if target.class_name == "Can"
@@ -373,7 +396,21 @@ class PickPlaceController:
         wrist_targets: WristTargets,
         orientation: np.ndarray,
     ) -> None:
-        """Log a concise, human-readable result for one movement stage."""
+        """Log a concise, human-readable result for one movement stage.
+
+        Args:
+            class_name: Name of the object class being manipulated, used to
+                label the log line.
+            stage: Stage that just converged.
+            ticks: Number of ticks spent in the stage before it converged.
+            command: Pose command the stage was converging toward.
+            position: Current end-effector position, used to compute the
+                position error.
+            wrist_targets: Commanded wrist joint targets, used to compute
+                joint errors.
+            orientation: Current end-effector orientation, used to compute
+                the yaw error when the command has a yaw target.
+        """
         position_error = np.linalg.norm(command.position - position)
         joints = self.motion.joint_positions
         fields = [f"position_error={position_error:.4f} m"]
@@ -403,7 +440,14 @@ class PickPlaceController:
         stage: Stage,
         command: PoseCommand,
     ) -> None:
-        """Log the world-frame target that a Cartesian stage will approach."""
+        """Log the world-frame target that a Cartesian stage will approach.
+
+        Args:
+            class_name: Name of the object class being manipulated, used to
+                label the log line.
+            stage: Stage that is starting.
+            command: Pose command whose target position is logged.
+        """
         self.logger.info(
             "%s | %s started | target_position=(%.3f, %.3f, %.3f)",
             class_name,
@@ -417,7 +461,15 @@ class PickPlaceController:
         stage: Stage,
         target_yaw: float,
     ) -> None:
-        """Log the desired world yaw for a yaw-only stage."""
+        """Log the desired world yaw for a yaw-only stage.
+
+        Args:
+            class_name: Name of the object class being manipulated, used to
+                label the log line.
+            stage: Stage that is starting.
+            target_yaw: Desired world yaw, in degrees, that the stage will
+                rotate toward.
+        """
         self.logger.info(
             "%s | %s started | target_yaw=%.2f°",
             class_name,
@@ -441,6 +493,24 @@ class PickPlaceController:
         A command combines a world-frame position, desired gripper orientation,
         gripper state, and optional per-object limits such as a slower final
         descend. ``keep_world_yaw`` enables only Z-axis orientation correction.
+
+        Args:
+            position: Target world-frame position for the end effector.
+            orientation: Target end-effector orientation used for IK.
+            gripper_action: Gripper action value to hold while approaching
+                the pose.
+            position_tolerance: Convergence distance below which the position
+                is considered reached; defaults to the configured position
+                tolerance when omitted.
+            joint7_target: Fixed Joint 7 angle to hold instead of letting IK
+                choose it, used to preserve a previously achieved grasp yaw.
+            max_position_delta: Per-tick position step limit override, used
+                to slow down motion for stages such as the final descend.
+            keep_world_yaw: Restrict orientation correction to the Z axis so
+                only yaw is corrected, leaving the current roll and pitch
+                untouched.
+            yaw_target_deg: Desired world yaw, in degrees, checked for
+                convergence in addition to position and wrist targets.
         """
         return PoseCommand(
             position=np.asarray(position, dtype=float),
@@ -471,6 +541,31 @@ class PickPlaceController:
         When the yaw error is within tolerance, record the resulting grasp or
         re-zero pose and enter the next stage. Otherwise, apply one bounded
         yaw action and remain in the current stage.
+
+        The recorded value is what later stages hold fixed instead of
+        letting IK re-derive it: ``grasp_joint7_target`` is fed back into
+        FINE_DESCEND/LIFT so the grasp yaw survives the descend-and-lift
+        motion untouched, and ``rezero_orientation``/``rezero_yaw_deg``
+        become the orientation target for MOVE_TO_BIN/DESCEND_TO_BIN since
+        ``home_orientation`` (captured before any object was picked) no
+        longer matches the wrist's post-grasp yaw.
+
+        Args:
+            obs: Most recent environment observation, returned unchanged
+                once the yaw has already converged.
+            state: Mutable run state tracking the current stage, tick count,
+                and recorded grasp/re-zero values.
+            orientation: Current end-effector orientation, used to compute
+                the yaw error.
+            desired_yaw: Target world yaw, in degrees, to rotate Joint 7
+                toward.
+            gripper_action: Gripper action value to apply while rotating.
+            next_stage: Stage to enter once the yaw error falls within
+                tolerance.
+            class_name: Name of the object class being manipulated, used for
+                logging.
+            record_rezero_pose: Record the converged yaw and orientation as
+                the re-zero pose instead of as a grasp Joint-7 target.
         """
         current_yaw = self._yaw_deg(orientation)
         yaw_error = self._yaw_error(desired_yaw, orientation)
@@ -503,7 +598,17 @@ class PickPlaceController:
         wrist_targets: WristTargets,
         orientation: np.ndarray,
     ) -> bool:
-        """Return whether the pose command and optional yaw target converged."""
+        """Return whether the pose command and optional yaw target converged.
+
+        Args:
+            command: Pose command being checked for convergence, including
+                its position tolerance and optional yaw target.
+            position: Current end-effector position.
+            wrist_targets: Commanded wrist joint targets to check for
+                convergence.
+            orientation: Current end-effector orientation, used to compute
+                the yaw error when the command has a yaw target.
+        """
         position_ok = (
             np.linalg.norm(command.position - position) < command.position_tolerance
         )
@@ -518,7 +623,12 @@ class PickPlaceController:
         )
 
     def _wrist_converged(self, targets: WristTargets) -> bool:
-        """Return whether the commanded vertical-down wrist targets converged."""
+        """Return whether the commanded vertical-down wrist targets converged.
+
+        Args:
+            targets: Commanded wrist joint targets (Joint 6, and optionally
+                Joint 5) to compare against the current joint positions.
+        """
         joints = self.motion.joint_positions
         joint6_error = abs(joints[self.motion.joint6_index] - targets.joint6)
         joint6_ok = joint6_error < np.deg2rad(
@@ -532,7 +642,15 @@ class PickPlaceController:
         )
 
     def _step_pose(self, command: PoseCommand, wrist_targets: WristTargets) -> dict:
-        """Build and apply one joint-position action for a Cartesian command."""
+        """Build and apply one joint-position action for a Cartesian command.
+
+        Args:
+            command: Pose command specifying the target position,
+                orientation, gripper action, and optional per-object motion
+                limits.
+            wrist_targets: Commanded Joint 5/Joint 6 targets used to hold
+                the gripper vertically down.
+        """
         action = self.motion.action(
             command.position,
             command.orientation,
@@ -547,7 +665,14 @@ class PickPlaceController:
         return self._step(action)
 
     def _hold_gripper(self, ticks: int, gripper_action: float) -> dict:
-        """Keep the current arm pose while applying a gripper action for ``ticks``."""
+        """Keep the current arm pose while applying a gripper action for ``ticks``.
+
+        Args:
+            ticks: Number of simulation steps to hold the pose while
+                applying the gripper action.
+            gripper_action: Gripper action value to apply on every step
+                (e.g. fully open or fully closed).
+        """
         obs = None
         for _ in range(ticks):
             obs = self._step(
@@ -556,7 +681,12 @@ class PickPlaceController:
         return obs
 
     def _step(self, action: np.ndarray) -> dict:
-        """Apply one action and keep viewer geometry settings consistent."""
+        """Apply one action and keep viewer geometry settings consistent.
+
+        Args:
+            action: Full joint-position and gripper action array to pass to
+                the environment's step function.
+        """
         obs, _, _, _ = self.env.step(action)
         native_viewer = getattr(getattr(self.env, "viewer", None), "viewer", None)
         if native_viewer is not None:
@@ -567,7 +697,13 @@ class PickPlaceController:
         return obs
 
     def _enter_stage(self, state: ControllerRunState, next_stage: Stage) -> None:
-        """Set the next stage and reset its elapsed tick counter."""
+        """Set the next stage and reset its elapsed tick counter.
+
+        Args:
+            state: Mutable run state whose stage and tick counter are
+                updated.
+            next_stage: Stage to transition into.
+        """
         state.stage = next_stage
         state.stage_tick = 0
         self._active_stage = next_stage
@@ -579,12 +715,28 @@ class PickPlaceController:
         command: PoseCommand | None = None,
         position: np.ndarray | None = None,
     ) -> None:
-        """Increment the active-stage counter and raise on non-convergence."""
+        """Increment the active-stage counter and raise on non-convergence.
+
+        A stage that never converges (an unreachable pose, a bad detection)
+        would otherwise loop forever issuing corrections that never shrink
+        the error; raising here turns that into an immediate, diagnosable
+        failure instead of a silent hang.
+
+        Args:
+            state: Mutable run state whose tick counter is incremented for
+                the active stage.
+            class_name: Name of the object class being manipulated, used in
+                log and error messages.
+            command: Pose command being pursued, used to report the position
+                error if the stage fails to converge.
+            position: Current end-effector position, used together with
+                ``command`` to report the position error if the stage fails
+                to converge.
+        """
         state.stage_tick += 1
         self._log_stage_progress(state, class_name, command, position)
         if state.stage_tick < self.stages_config.max_ticks_per_stage:
             return
-        # Stop instead of issuing unbounded corrections when a target is unreachable.
         message = f"{class_name} | {state.stage.name} | STAGE not converged"
         if command is not None and position is not None:
             message += (
@@ -599,7 +751,18 @@ class PickPlaceController:
         command: PoseCommand | None,
         position: np.ndarray | None,
     ) -> None:
-        """Log periodic DEBUG progress without cluttering normal run output."""
+        """Log periodic DEBUG progress without cluttering normal run output.
+
+        Args:
+            state: Run state providing the current stage and its elapsed
+                tick count.
+            class_name: Name of the object class being manipulated, used to
+                label the log line.
+            command: Pose command being pursued; when omitted, only the tick
+                count is logged.
+            position: Current end-effector position; when omitted along with
+                ``command``, only the tick count is logged.
+        """
         if state.stage_tick % self.stages_config.log_every_ticks:
             return
         if command is None or position is None:
@@ -619,12 +782,22 @@ class PickPlaceController:
         )
 
     def _object_position(self, target: PlacementTarget) -> np.ndarray:
-        """Return the simulated world position of the object being moved."""
+        """Return the simulated world position of the object being moved.
+
+        Args:
+            target: Detected object pose and its destination-bin pose, used
+                to look up the object's body id.
+        """
         body_id = self.env.obj_body_id[target.class_name]
         return self.env.sim.data.body_xpos[body_id].copy()
 
     def _is_object_grasped(self, target: PlacementTarget) -> bool:
-        """Return whether both gripper fingers currently contact the target object."""
+        """Return whether both gripper fingers currently contact the target object.
+
+        Args:
+            target: Detected object pose and its destination-bin pose, used
+                to identify which object's contact geoms to check.
+        """
         object_model = next(
             object_model
             for object_model in self.env.objects
@@ -638,7 +811,14 @@ class PickPlaceController:
         )
 
     def _object_lifted(self, target: PlacementTarget, start_z: float) -> bool:
-        """Return whether the target remains grasped and rose above its start height."""
+        """Return whether the target remains grasped and rose above its start height.
+
+        Args:
+            target: Detected object pose and its destination-bin pose, used
+                to check the object's current grasp state and height.
+            start_z: World-frame height of the object before it was lifted,
+                used as the baseline for the minimum-rise check.
+        """
         current_z = self._object_position(target)[2]
         return self._is_object_grasped(target) and current_z >= (
             start_z + self.stages_config.grasp_min_lift_height
@@ -646,24 +826,45 @@ class PickPlaceController:
 
     @staticmethod
     def _yaw_deg(orientation: np.ndarray) -> float:
-        """Return symmetry-wrapped world yaw from an orientation matrix."""
+        """Return symmetry-wrapped world yaw from an orientation matrix.
+
+        Args:
+            orientation: End-effector orientation matrix to convert to a
+                symmetry-wrapped yaw angle.
+        """
         return CoordinateTransformer.rotation_matrix_to_yaw_deg(orientation)
 
     def _yaw_error(self, target_yaw: float, orientation: np.ndarray) -> float:
-        """Return the shortest symmetry-aware yaw error in degrees."""
+        """Return the shortest symmetry-aware yaw error in degrees.
+
+        Args:
+            target_yaw: Desired world yaw, in degrees.
+            orientation: Current end-effector orientation, converted to a
+                yaw angle for comparison against ``target_yaw``.
+        """
         current_yaw = self._yaw_deg(orientation)
         return (target_yaw - current_yaw + 90.0) % 180.0 - 90.0
 
     @staticmethod
     def _required_rezero_yaw(state: ControllerRunState) -> float:
-        """Return the recorded re-zero yaw or raise if it is unavailable."""
+        """Return the recorded re-zero yaw or raise if it is unavailable.
+
+        Args:
+            state: Run state expected to hold a yaw recorded during
+                REZERO_YAW.
+        """
         if state.rezero_yaw_deg is None:
             raise RuntimeError("MOVE_TO_BIN requires a yaw recorded at REZERO_YAW")
         return state.rezero_yaw_deg
 
     @staticmethod
     def _required_rezero_orientation(state: ControllerRunState) -> np.ndarray:
-        """Return the recorded re-zero orientation or raise if unavailable."""
+        """Return the recorded re-zero orientation or raise if unavailable.
+
+        Args:
+            state: Run state expected to hold an orientation recorded during
+                REZERO_YAW.
+        """
         if state.rezero_orientation is None:
             raise RuntimeError(
                 "MOVE_TO_BIN requires an orientation recorded at REZERO_YAW"

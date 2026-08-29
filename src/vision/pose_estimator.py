@@ -9,18 +9,23 @@ import onnxruntime as ort
 class PoseEstimator:
     """Estimate the 3D pose of one object detected in the agent-view image.
 
-    The model receives the full camera image, the detection box, the detected
-    class, and an object crop. It returns XYZ relative to the camera plus a 6D
-    rotation representation. The executor later converts this output to world
-    coordinates before sending it to the robot controller.
+    The model takes two different views of the same detection for two
+    different jobs: the full agentview frame (resized to ``pos_image_size``)
+    for predicting xyz, and a tight crop of just the object (resized to
+    ``rotation_image_size``) for predicting rotation. A crop alone carries no
+    scale or position information to regress absolute xyz from; conversely,
+    the fine surface detail rotation depends on (which face or edge points at
+    the camera) is mostly lost once the object is only a small part of a
+    downscaled full frame. This mirrors the input design of the vision repo's
+    PoseDataset and pose-estimation model.
 
-    Attributes:
-        num_classes: Number of classes accepted by the model.
-        pos_image_size: Full-image input size for position inference.
-        rotation_image_size: Object-crop input size for rotation inference.
-        session: Configured ONNX Runtime inference session.
-        input_names: Ordered names of the ONNX input tensors.
-        logger: Logger used for initialization details.
+    Rotation is returned as a 6D representation (Zhou et al., 2019) instead of
+    a raw 3-by-3 matrix, then reconstructed into an orthonormal matrix via
+    Gram-Schmidt (see ``rot6d_to_matrix``): the network only has to regress
+    two ordinary vectors, rather than nine numbers that must already satisfy
+    orthonormality constraints. The executor converts the resulting
+    camera-frame xyz/rotation into world coordinates before sending it to the
+    robot controller.
     """
 
     def __init__(
@@ -75,7 +80,15 @@ class PoseEstimator:
 
     @staticmethod
     def rot6d_to_matrix(rot6d: np.ndarray) -> np.ndarray:
-        """Reconstruct a 3-by-3 rotation matrix from a 6D representation."""
+        """Reconstruct a 3-by-3 rotation matrix from a 6D representation.
+
+        See the class docstring for why the model predicts a 6D vector
+        (Zhou et al., 2019) instead of a raw matrix.
+
+        Args:
+            rot6d: Flat 6-element vector of two predicted 3D axes (a1, a2)
+                to be Gram-Schmidt orthonormalized into a rotation matrix.
+        """
 
         # Gram-Schmidt keeps the model's two predicted axes orthonormal.
         a1, a2 = rot6d[:3], rot6d[3:]
@@ -88,7 +101,13 @@ class PoseEstimator:
         return np.column_stack([b1, b2, b3])
 
     def _preprocess_image(self, image_bgr: np.ndarray, image_size: int) -> np.ndarray:
-        """Resize a BGR image and convert it into a normalized NCHW tensor."""
+        """Resize a BGR image and convert it into a normalized NCHW tensor.
+
+        Args:
+            image_bgr: Source image to preprocess, either the full agentview
+                frame or a cropped object region.
+            image_size: Target square side length, in pixels, to resize to.
+        """
         resized = cv2.resize(image_bgr, (image_size, image_size))
         rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
         chw = np.transpose(rgb, (2, 0, 1))
@@ -97,7 +116,25 @@ class PoseEstimator:
     def _build_bbox_features(
         self, bbox, frame_width: int, frame_height: int
     ) -> np.ndarray:
-        """Build normalized bounding-box features expected by the ONNX model."""
+        """Build normalized bounding-box features expected by the ONNX model.
+
+        Coordinates are divided by frame width/height so the features are
+        resolution-independent. Width and height themselves are left out
+        since they're redundant with the corner coordinates; area and center
+        are included instead because they carry signal the corners don't make
+        explicit on their own: area is a non-linear depth cue (closer objects
+        project larger), and center ties directly to the object's lateral
+        x/y position through the camera projection. Matches the feature set
+        the vision repo's PoseDataset builds for training.
+
+        Args:
+            bbox: (x1, y1, x2, y2) detection box in ``frame_width`` by
+                ``frame_height`` pixel space.
+            frame_width: Width of the frame the bbox coordinates are in,
+                used to normalize the coordinates.
+            frame_height: Height of the frame the bbox coordinates are in,
+                used to normalize the coordinates.
+        """
         x1, y1, x2, y2 = bbox
         x1n, y1n, x2n, y2n = (
             x1 / frame_width,
@@ -110,7 +147,12 @@ class PoseEstimator:
         return np.array([[x1n, y1n, x2n, y2n, area, cx, cy]], dtype=np.float32)
 
     def _build_class_onehot(self, class_id: int) -> np.ndarray:
-        """Build the one-hot encoded class input expected by the ONNX model."""
+        """Build the one-hot encoded class input expected by the ONNX model.
+
+        Args:
+            class_id: Class index, matching training's class_names order, to
+                mark as the active class in the one-hot vector.
+        """
         onehot = np.zeros((1, self.num_classes), dtype=np.float32)
         onehot[0, class_id] = 1.0
         return onehot

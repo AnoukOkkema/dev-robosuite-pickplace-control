@@ -19,11 +19,7 @@ CONFIG_PATH = Path("config", "config.yaml")
 
 
 class ConfigReader:
-    """Read and parse YAML configuration from disk.
-
-    Attributes:
-        _config_path: Location of the YAML file to read.
-    """
+    """Read and parse YAML configuration from disk."""
 
     def __init__(self, config_path: Path = CONFIG_PATH):
         """Store the YAML file path.
@@ -118,14 +114,11 @@ class ConfigAssembler:
                     video_capture_every_ticks=raw["VISUALIZATION"].get(
                         "VIDEO_CAPTURE_EVERY_TICKS", 6
                     ),
-                    trajectory_enabled=raw["VISUALIZATION"].get(
-                        "TRAJECTORY_ENABLED", False
-                    ),
                     trajectory_path=raw["VISUALIZATION"].get(
-                        "TRAJECTORY_PATH", "outputs/trajectory/trajectory.bin"
+                        "TRAJECTORY_PATH", "docs/assets/sample-trajectory.bin"
                     ),
                     trajectory_model_path=raw["VISUALIZATION"].get(
-                        "TRAJECTORY_MODEL_PATH", "outputs/trajectory/model.zip"
+                        "TRAJECTORY_MODEL_PATH", "docs/assets/scene-model.zip"
                     ),
                     scan_images_enabled=raw["VISUALIZATION"].get(
                         "SCAN_IMAGES_ENABLED", False

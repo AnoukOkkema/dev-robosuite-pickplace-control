@@ -6,6 +6,7 @@ import numpy as np
 from src.control.stage import Stage
 from src.recording.run_observer import BaseRunObserver
 from src.recording.video_recorder import VideoRecorder
+from src.util.types import RunResult
 
 
 class VideoObserver(BaseRunObserver):
@@ -37,12 +38,7 @@ class VideoObserver(BaseRunObserver):
         self._front_cam_xmat = None
         self._active_target_pose = None
         self._skip_first_frame = False
-        # Only during these approach stages does the recorded MP4 get the
-        # detection overlay (bounding box + pose axes). The overlay is drawn
-        # at the position where the scan detected the object. That is correct
-        # while the object still lies untouched on that spot, but from GRASP
-        # onward the gripper moves the object while the box would stay behind
-        # at the old position.
+        # Pre-grasp approach stages only; see on_step for why annotation stops there.
         self._annotated_stages = frozenset(
             {
                 Stage.RAISE,
@@ -60,6 +56,10 @@ class VideoObserver(BaseRunObserver):
         The reset state contains newly placed objects before the first
         simulation update, so the first captured frame is skipped. It
         would otherwise show objects still settling into view.
+
+        Args:
+            executor: The executor running the pick-and-place episode, used
+                here to resolve the front camera's world-frame extrinsics.
         """
         self._executor = executor
         self._front_cam_xpos, self._front_cam_xmat = (
@@ -69,14 +69,44 @@ class VideoObserver(BaseRunObserver):
         self._skip_first_frame = True
 
     def on_scan(self, agentview_frame: np.ndarray, poses_cam: list) -> None:
-        """Unused. The video overlay is driven by ``on_target_detected`` instead."""
+        """Unused. The video overlay is driven by ``on_target_detected`` instead.
+
+        Args:
+            agentview_frame: Full, uncropped BGR agent-view capture the scan
+                ran detection on.
+            poses_cam: ``(class_name, box, xyz_cam, rot_cam)`` per detected
+                target-class object.
+        """
 
     def on_target_detected(self, class_name: str, pose_cam: tuple) -> None:
-        """Remember the detected pose so the next frames can be annotated with it."""
+        """Remember the detected pose so the next frames can be annotated with it.
+
+        Args:
+            class_name: Detected object class. Unused here; the stored pose
+                tuple already carries the class name.
+            pose_cam: ``(class_name, box, xyz_cam, rot_cam)`` detection box
+                in cropped agent-view pixels plus the camera-frame pose,
+                stored as the active target for later annotation.
+        """
         self._active_target_pose = pose_cam
 
     def on_step(self, object_name: str, stage: Stage) -> None:
-        """Render and append one labelled frame pair, downsampled by the recorder."""
+        """Render and append one labelled frame pair, downsampled by the recorder.
+
+        The bounding box and pose axes are only drawn while the object is
+        still sitting where the scan detected it, i.e. through the approach
+        stages up to ``FINE_DESCEND``. From ``GRASP`` onward the gripper
+        moves the object, so reusing that last detection pose would draw a
+        box hovering over empty table while the object itself has moved
+        elsewhere in frame.
+
+        Args:
+            object_name: Object the controller is currently handling, drawn
+                into the frame's status caption.
+            stage: Current pick-and-place stage; determines both the status
+                caption and whether the last detection pose is still valid
+                to annotate.
+        """
         if not self._recorder.should_capture_motion_frame():
             return
         if self._skip_first_frame:
@@ -99,8 +129,14 @@ class VideoObserver(BaseRunObserver):
 
         self._recorder.capture(agentview_bgr, frontview_rgb, object_name, stage)
 
-    def on_run_end(self) -> None:
-        """Finish both MP4 files."""
+    def on_run_end(self, result: RunResult) -> None:
+        """Finish both MP4 files.
+
+        Args:
+            result: Placement/vision-accuracy summary for the finished run.
+                Unused here; only closing the recorder matters.
+        """
+        del result
         self._recorder.close()
 
     # ------------------------------------------------------------------
@@ -110,7 +146,13 @@ class VideoObserver(BaseRunObserver):
     def _annotate_agentview(
         self, agentview_bgr: np.ndarray, pose_cam: tuple
     ) -> np.ndarray:
-        """Draw the active target's box, label, and pose axes in agent view."""
+        """Draw the active target's box, label, and pose axes in agent view.
+
+        Args:
+            agentview_bgr: Agent-view frame to draw the annotation onto.
+            pose_cam: ``(class_name, box, xyz_cam, rot_cam)`` of the active
+                target, in cropped agent-view pixels and camera-frame pose.
+        """
         class_name, box, xyz_cam, rot_cam = pose_cam
         crop_region = self._executor.crop_region
         x1, y1, x2, y2 = (int(round(value)) for value in box)
@@ -138,7 +180,14 @@ class VideoObserver(BaseRunObserver):
     def _annotate_frontview(
         self, frontview_bgr: np.ndarray, pose_cam: tuple
     ) -> np.ndarray:
-        """Draw the active target's projected box, label, and pose axes, front view."""
+        """Draw the active target's projected box, label, and pose axes, front view.
+
+        Args:
+            frontview_bgr: Front-view frame to draw the annotation onto.
+            pose_cam: ``(class_name, box, xyz_cam, rot_cam)`` of the active
+                target in the agent camera's frame; reprojected here into
+                the front camera's frame before drawing.
+        """
         class_name, _, xyz_agent, rot_agent = pose_cam
         executor = self._executor
         world_position = executor.cam_xmat @ xyz_agent + executor.cam_xpos
@@ -175,6 +224,10 @@ class VideoObserver(BaseRunObserver):
         The front camera has no detector of its own. MuJoCo segmentation gives
         the geometry identifier for every visible pixel, so table walls and
         other foreground meshes naturally occlude the target box.
+
+        Args:
+            class_name: Object class whose visual geometry is looked up by
+                name to find its segmentation identifier.
         """
         env = self._executor.env
         visual_geom_id = env.sim.model.geom_name2id(f"{class_name}_g0_visual")
@@ -192,7 +245,12 @@ class VideoObserver(BaseRunObserver):
         )
 
     def _render_segmentation_frame(self, camera_name: str) -> np.ndarray:
-        """Render visible geometry identifiers for one MuJoCo camera frame."""
+        """Render visible geometry identifiers for one MuJoCo camera frame.
+
+        Args:
+            camera_name: Name of the MuJoCo camera to render, e.g.
+                ``"frontview"``.
+        """
         executor = self._executor
         executor._render_camera_frame(camera_name)  # ensures the renderer exists
         renderer = executor._renderers[camera_name]
@@ -216,7 +274,17 @@ class VideoObserver(BaseRunObserver):
         camera_name: str,
         axis_length: float = 0.05,
     ) -> np.ndarray:
-        """Draw a bounding box and red-X, green-Y, blue-Z pose axes."""
+        """Draw a bounding box and red-X, green-Y, blue-Z pose axes.
+
+        Args:
+            frame: Frame to draw the box and axes onto; not modified in place.
+            box: Full-frame bounding box, or ``None`` to skip drawing it.
+            xyz_cam: Camera-frame position of the axes' origin.
+            rot_cam: Camera-frame rotation matrix defining the axes' directions.
+            camera_name: Name of the camera ``xyz_cam`` is expressed in, used
+                to project points into that camera's pixels.
+            axis_length: Length of each drawn axis, in metres.
+        """
         annotated = frame.copy()
         axis_colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
 
@@ -243,6 +311,11 @@ class VideoObserver(BaseRunObserver):
 
     def _project_point(self, xyz_cam: np.ndarray, camera_name: str):
         """Project a camera-frame point into full-frame pixel coordinates.
+
+        Args:
+            xyz_cam: Point position in the named camera's frame.
+            camera_name: Camera whose intrinsics (field of view, image size)
+                are used to project the point.
 
         Returns:
             Pixel coordinates, or ``None`` when the point is behind the camera.

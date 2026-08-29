@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from src.control.stage import Stage
+from src.util.types import RunResult
 
 
 class BaseRunObserver(ABC):
@@ -18,7 +19,12 @@ class BaseRunObserver(ABC):
 
     @abstractmethod
     def on_run_start(self, executor) -> None:
-        """Called once per run, after ``env.reset()`` and before the first tick."""
+        """Called once per run, after ``env.reset()`` and before the first tick.
+
+        Args:
+            executor: The executor running the pick-and-place episode, which
+                observers may inspect for scene, camera, or model details.
+        """
 
     @abstractmethod
     def on_scan(self, agentview_frame: np.ndarray, poses_cam: list) -> None:
@@ -44,8 +50,18 @@ class BaseRunObserver(ABC):
 
     @abstractmethod
     def on_step(self, object_name: str, stage: Stage) -> None:
-        """Called after every controller step."""
+        """Called after every controller step.
+
+        Args:
+            object_name: Object the controller is currently handling.
+            stage: Current pick-and-place stage.
+        """
 
     @abstractmethod
-    def on_run_end(self) -> None:
-        """Called when the run finishes, also after a failure."""
+    def on_run_end(self, result: RunResult) -> None:
+        """Called when the run finishes, also after a failure.
+
+        Args:
+            result: Placement/vision-accuracy summary built from whatever
+                was collected up to this point, even after a crash.
+        """
