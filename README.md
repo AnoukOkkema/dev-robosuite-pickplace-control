@@ -4,7 +4,7 @@ A robot control pipeline for a pick-and-place task. It drives a robosuite `PickP
 
 `yolo_detector.onnx` finds each object's box and class. `pose_estimator.onnx` predicts its position and rotation, in camera-frame xyz. An 11-stage joint-space state machine then moves the arm to pick each object up and place it in its bin.
 
-<video src="https://github.com/user-attachments/assets/e9a2174c-5a3b-4732-bf3d-130dfb7bfb57" controls muted title="Front-view recording of a pick-and-place run"></video>
+<video src="https://raw.githubusercontent.com/AnoukOkkema/dev-robosuite-pickplace-control/main/outputs/videos/pickplace_frontview.mp4" controls muted title="Front-view recording of a pick-and-place run"></video>
 
 ## Table of contents
 
